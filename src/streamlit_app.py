@@ -3,6 +3,9 @@
 
 # %%
 import streamlit as sl
+import nltk
+from nltk.tokenize import word_tokenize
+from collections import defaultdict
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -47,6 +50,92 @@ def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
 # %%
+def count_tokens(text):
+    # Placeholder function: you would use an actual tokenizer to count tokens
+    # For example, use the tokenizer from the transformers library
+    from transformers import GPT2Tokenizer
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    return len(tokenizer.encode(text))
+    return len(text.split())  # Simplified for this example
+
+def split_text_into_chunks(text, token_limit):
+    if count_tokens(text) <= token_limit:
+        return [text]
+    
+    # Find the midpoint to split the text
+    midpoint = len(text) // 2
+    
+    # Split the text at the midpoint
+    left_part = text[:midpoint]
+    right_part = text[midpoint:]
+    
+    # Ensure we split at a word boundary to avoid cutting words in half
+    while not left_part.endswith(' ') and midpoint > 0:
+        midpoint -= 1
+        left_part = text[:midpoint]
+        right_part = text[midpoint:]
+    
+    # Recursively split the text parts
+    left_chunks = split_text_into_chunks(left_part.strip(), token_limit)
+    right_chunks = split_text_into_chunks(right_part.strip(), token_limit)
+    
+    return left_chunks + right_chunks
+
+# Example usage
+text = "This is a very long text that needs to be split into smaller chunks. Each chunk should not exceed the token limit."
+token_limit = 10
+
+chunks = split_text_into_chunks(text, token_limit)
+for i, chunk in enumerate(chunks):
+    print(f"Chunk {i+1}: {chunk}")
+
+index = {
+    'this': [1],
+    'is': [1],
+    'the': [1],
+    'first': [1],
+    'document': [1],
+    'second': [2],
+    'for': [2],
+    'testing': [2],
+    'purposes': [2],
+    'another': [3],
+    'example': [3]
+}
+
+def query_llm(query, index):
+    tokens = word_tokenize(query.lower())  # Tokenize and convert to lowercase
+    results = set(index.get(token, []) for token in tokens)  # Get document IDs for each token
+    # Flatten the list of lists and return unique document IDs
+    return sorted(set(doc_id for sublist in results for doc_id in sublist))
+
+# Example usage:
+query = "example document"
+query_result = query_llm(query, index)
+print("Query:", query)
+print("Matching Documents:", query_result)
+
+def index_documents(documents):
+    index = defaultdict(list)
+    for doc_id, doc_text in documents.items():
+        tokens = word_tokenize(doc_text.lower())  # Tokenize and convert to lowercase
+        for token in tokens:
+            index[token].append(doc_id)
+    
+    return index
+# Example documents
+documents = {
+    1: "This is the first document.",
+    2: "Second document for testing purposes.",
+    3: "Another example document."
+}
+
+# Indexing the documents
+index = index_documents(documents)
+
+# Example: Retrieve documents containing the token "document"
+print(index["document"])  # Output: [1, 2, 3]
+
 import os
 
 if __name__=='__main__':
