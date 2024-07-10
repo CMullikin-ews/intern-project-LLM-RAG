@@ -4,6 +4,7 @@
 # %%
 import streamlit as sl
 import nltk
+import os
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
 from langchain_community.document_loaders import PyPDFLoader
@@ -51,11 +52,9 @@ def format_docs(docs):
 
 # %%
 def count_tokens(text):
-    # Placeholder function: you would use an actual tokenizer to count tokens
-    # For example, use the tokenizer from the transformers library
     from transformers import GPT2Tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    # return len(tokenizer.encode(text))
+    tokens = tokenizer.tokenize(text)
     return len(text.split())  # Simplified for this example
 
 def split_text_into_chunks(text, token_limit):
