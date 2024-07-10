@@ -55,7 +55,7 @@ def count_tokens(text):
     # For example, use the tokenizer from the transformers library
     from transformers import GPT2Tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    return len(tokenizer.encode(text))
+    # return len(tokenizer.encode(text))
     return len(text.split())  # Simplified for this example
 
 def split_text_into_chunks(text, token_limit):
