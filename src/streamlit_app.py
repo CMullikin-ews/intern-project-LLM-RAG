@@ -79,39 +79,11 @@ def split_text_into_chunks(text, token_limit):
     
     return left_chunks + right_chunks
 
-# Example usage
-text = "This is a very long text that needs to be split into smaller chunks. Each chunk should not exceed the token limit."
-token_limit = 10
-
-chunks = split_text_into_chunks(text, token_limit)
-for i, chunk in enumerate(chunks):
-    print(f"Chunk {i+1}: {chunk}")
-
-index = {
-    'this': [1],
-    'is': [1],
-    'the': [1],
-    'first': [1],
-    'document': [1],
-    'second': [2],
-    'for': [2],
-    'testing': [2],
-    'purposes': [2],
-    'another': [3],
-    'example': [3]
-}
-
 def query_llm(query, index):
     tokens = word_tokenize(query.lower())  # Tokenize and convert to lowercase
     results = set(index.get(token, []) for token in tokens)  # Get document IDs for each token
     # Flatten the list of lists and return unique document IDs
     return sorted(set(doc_id for sublist in results for doc_id in sublist))
-
-# Example usage:
-query = "example document"
-query_result = query_llm(query, index)
-print("Query:", query)
-print("Matching Documents:", query_result)
 
 def index_documents(documents):
     index = defaultdict(list)
@@ -119,7 +91,6 @@ def index_documents(documents):
         tokens = word_tokenize(doc_text.lower())  # Tokenize and convert to lowercase
         for token in tokens:
             index[token].append(doc_id)
-    
     return index
 # Example documents
 documents = {
