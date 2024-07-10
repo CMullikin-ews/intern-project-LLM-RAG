@@ -2,7 +2,7 @@
 # mport Essential dependencies
 
 # %%
-import streamlit as sl
+import streamlit as st
 import nltk
 import os
 from nltk.tokenize import word_tokenize
@@ -15,7 +15,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-
+from transformers import GPT2Tokenizer
 # %% [markdown]
 # unction to load the vectordatabase
 
@@ -48,14 +48,13 @@ def load_prompt():
 
 # %%
 def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
+    return "\n\n".join(doc.page_content for doc in docs)
 
 # %%
 def count_tokens(text):
-    from transformers import GPT2Tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
     tokens = tokenizer.tokenize(text)
-    return len(text.split())  # Simplified for this example
+    return len(text)  # Simplified for this example
 
 def split_text_into_chunks(text, token_limit):
     if count_tokens(text) <= token_limit:
@@ -135,12 +134,10 @@ index = index_documents(documents)
 # Example: Retrieve documents containing the token "document"
 print(index["document"])  # Output: [1, 2, 3]
 
-import os
-
 if __name__=='__main__':
-        sl.header("welcome to the 📝PDF bot")
-        text = sl.empty()
-        box = sl.empty()
+        st.header("welcome to the 📝PDF bot")
+        text = st.empty()
+        box = st.empty()
         text.write("Please enter your API key: ")
         API_key = box.text_input('Enter API key')
 
@@ -167,7 +164,7 @@ if __name__=='__main__':
                                 | StrOutputParser()
                         )
                         response=rag_chain.invoke(query)
-                        user_response = sl.empty()
+                        user_response = st.empty()
                         user_response.write(response)
         
 
