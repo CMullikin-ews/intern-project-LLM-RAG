@@ -8,7 +8,6 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain_openai import OpenAIEmbeddings
 
 #function to load the vectordatabase
 def load_knowledgeBase():
@@ -29,7 +28,7 @@ def load_prompt():
         Given below is the context and question of the user.
         context = {context}
         question = {question}
-        if the answer is not in the pdf answer "i donot know what the hell you are asking about"
+        if the answer is not in the pdf answer "Sorry, I'm not sure how to respond to this"
          """
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
@@ -45,7 +44,6 @@ if __name__=='__main__':
         knowledgeBase=load_knowledgeBase()
         llm=load_llm()
         prompt=load_prompt()
-        
         query=sl.text_input('Enter some text')
         
         

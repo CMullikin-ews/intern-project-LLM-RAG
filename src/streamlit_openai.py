@@ -14,7 +14,7 @@ import os
 def load_knowledgeBase():
         embeddings=OpenAIEmbeddings(api_key=os.environ['API_key'] )
         DB_FAISS_PATH = 'vectorstore/db_faiss'
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings)
+        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         return db
         
 #function to load the OPENAI LLM
@@ -29,7 +29,7 @@ def load_prompt():
         Given below is the context and question of the user.
         context = {context}
         question = {question}
-        if the answer is not in the pdf answer "i donot know what the hell you are asking about"
+        if the answer is not in the pdf answer "Sorry, I'm not sure how to respond to this"
          """
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
