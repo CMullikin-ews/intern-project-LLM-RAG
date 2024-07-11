@@ -2,8 +2,9 @@
 # mport Essential dependencies
 
 # %%
-import streamlit as sl
+import streamlit as st
 import nltk
+import os
 from nltk.tokenize import word_tokenize
 from collections import defaultdict
 from langchain_community.document_loaders import PyPDFLoader
@@ -14,7 +15,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-
+from transformers import GPT2Tokenizer
 # %% [markdown]
 # unction to load the vectordatabase
 
@@ -47,16 +48,13 @@ def load_prompt():
 
 # %%
 def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
+    return "\n\n".join(doc.page_content for doc in docs)
 
 # %%
 def count_tokens(text):
-    # Placeholder function: you would use an actual tokenizer to count tokens
-    # For example, use the tokenizer from the transformers library
-    from transformers import GPT2Tokenizer
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-    return len(tokenizer.encode(text))
-    return len(text.split())  # Simplified for this example
+    tokens = tokenizer.tokenize(text)
+    return len(text)  # Simplified for this example
 
 def split_text_into_chunks(text, token_limit):
     if count_tokens(text) <= token_limit:
@@ -81,39 +79,11 @@ def split_text_into_chunks(text, token_limit):
     
     return left_chunks + right_chunks
 
-# Example usage
-text = "This is a very long text that needs to be split into smaller chunks. Each chunk should not exceed the token limit."
-token_limit = 10
-
-chunks = split_text_into_chunks(text, token_limit)
-for i, chunk in enumerate(chunks):
-    print(f"Chunk {i+1}: {chunk}")
-
-index = {
-    'this': [1],
-    'is': [1],
-    'the': [1],
-    'first': [1],
-    'document': [1],
-    'second': [2],
-    'for': [2],
-    'testing': [2],
-    'purposes': [2],
-    'another': [3],
-    'example': [3]
-}
-
 def query_llm(query, index):
     tokens = word_tokenize(query.lower())  # Tokenize and convert to lowercase
     results = set(index.get(token, []) for token in tokens)  # Get document IDs for each token
     # Flatten the list of lists and return unique document IDs
     return sorted(set(doc_id for sublist in results for doc_id in sublist))
-
-# Example usage:
-query = "example document"
-query_result = query_llm(query, index)
-print("Query:", query)
-print("Matching Documents:", query_result)
 
 def index_documents(documents):
     index = defaultdict(list)
@@ -121,7 +91,6 @@ def index_documents(documents):
         tokens = word_tokenize(doc_text.lower())  # Tokenize and convert to lowercase
         for token in tokens:
             index[token].append(doc_id)
-    
     return index
 # Example documents
 documents = {
@@ -136,12 +105,10 @@ index = index_documents(documents)
 # Example: Retrieve documents containing the token "document"
 print(index["document"])  # Output: [1, 2, 3]
 
-import os
-
 if __name__=='__main__':
-        sl.header("welcome to the 📝PDF bot")
-        text = sl.empty()
-        box = sl.empty()
+        st.header("welcome to the 📝PDF bot")
+        text = st.empty()
+        box = st.empty()
         text.write("Please enter your API key: ")
         API_key = box.text_input('Enter API key')
 
@@ -168,7 +135,7 @@ if __name__=='__main__':
                                 | StrOutputParser()
                         )
                         response=rag_chain.invoke(query)
-                        user_response = sl.empty()
+                        user_response = st.empty()
                         user_response.write(response)
         
 
