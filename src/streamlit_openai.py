@@ -13,7 +13,7 @@ import os
 #function to load the vectordatabase
 def load_knowledgeBase():
         embeddings=OpenAIEmbeddings(api_key=os.environ['API_key'] )
-        DB_FAISS_PATH = 'vectorstore/db_faiss'
+        DB_FAISS_PATH = '../vectorstore'
         db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         return db
         
