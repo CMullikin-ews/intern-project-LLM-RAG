@@ -8,7 +8,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
-
+from langchain_openai import OpenAIEmbeddings
 
 #function to load the vectordatabase
 def load_knowledgeBase():
