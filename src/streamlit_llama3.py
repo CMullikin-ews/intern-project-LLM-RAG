@@ -14,7 +14,7 @@ from langchain_openai import OpenAIEmbeddings
 def load_knowledgeBase():
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
         DB_FAISS_PATH = 'vectorstore/db_faiss'
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings)
+        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         return db
         
 #function to load the OPENAI LLM
