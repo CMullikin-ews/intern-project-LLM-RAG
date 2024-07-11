@@ -8,6 +8,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.llms import Ollama
+from langchain_community.embeddings import OllamaEmbeddings
 
 
 #function to load the vectordatabase
@@ -52,7 +53,7 @@ if __name__=='__main__':
         if(query):
                 #getting only the chunks that are similar to the query for llm to produce the output
                 similar_embeddings=knowledgeBase.similarity_search(query)
-                similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OpenAIEmbeddings(api_key="Enter your api key"))
+                similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
                 
                 #creating the chain for integrating llm,prompt,stroutputparser
                 retriever = similar_embeddings.as_retriever()
