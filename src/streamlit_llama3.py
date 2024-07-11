@@ -13,7 +13,7 @@ from langchain_openai import OpenAIEmbeddings
 #function to load the vectordatabase
 def load_knowledgeBase():
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        DB_FAISS_PATH = 'vectorstore/db_faiss'
+        DB_FAISS_PATH = '../vectorstore'
         db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         return db
         
