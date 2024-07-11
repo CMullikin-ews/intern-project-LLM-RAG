@@ -7,20 +7,19 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from langchain_community.llms import Ollama
 from langchain_community.embeddings import OllamaEmbeddings
 
 
 #function to load the vectordatabase
 def load_knowledgeBase():
-        embeddings=OpenAIEmbeddings(api_key="Enter your api key")
+        embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
         DB_FAISS_PATH = 'vectorstore/db_faiss'
         db = FAISS.load_local(DB_FAISS_PATH, embeddings)
         return db
         
 #function to load the OPENAI LLM
 def load_llm():
-        from langchain_openai import ChatOpenAI
+        from langchain_community.llms import Ollama
         llm = Ollama(model="llama3")
         return llm
 
