@@ -42,7 +42,7 @@ def format_docs(docs):
 
 if __name__=='__main__':
         sl.header("welcome to the 📝PDF bot")
-        sl.write("🤖 You can chat by Entering your queries ")
+        sl.write("🤖 You can chat by entering your queries ")
         knowledgeBase=load_knowledgeBase()
         llm=load_llm()
         prompt=load_prompt()
@@ -66,7 +66,4 @@ if __name__=='__main__':
                 response=rag_chain.invoke(query)
                 sl.write(response)
                 
-        
-        
-        
-        
+                
