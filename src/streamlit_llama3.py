@@ -9,6 +9,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
+import os
+os.system("ollama pull llama3")
 
 #function to load the vectordatabase
 def load_knowledgeBase():
@@ -19,7 +21,6 @@ def load_knowledgeBase():
         
 #function to load the OPENAI LLM
 def load_llm():
-        !ollama pull llama3
         llm = Ollama(model="llama3")
         return llm
 
