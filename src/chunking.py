@@ -17,7 +17,7 @@ import gradio as gr
 from langchain.prompts import PromptTemplate
 
 # Load the PDF
-loader = PDFPlumberLoader("11pests1disease.pdf")
+loader = PDFPlumberLoader("random machine learing pdf.pdf")
 docs = loader.load()
 
 # Split into chunks
@@ -79,9 +79,9 @@ def respond(question,history):
 gr.ChatInterface(
     respond,
     chatbot=gr.Chatbot(height=500),
-    textbox=gr.Textbox(placeholder="Ask me question related to Plants and their diseases", container=False, scale=7),
-    title="Plant's Chatbot",
-    examples=["What are different kinds of plant diseases", "What is Stewart’s wilt disease"],
+    textbox=gr.Textbox(placeholder="Ask me question related to Machine learning", container=False, scale=7),
+    title="Machine learning Chatbot",
+    examples=["What are different kinds of Machine learning capabilities", "What is AI"],
     cache_examples=True,
     retry_btn=None,
 
