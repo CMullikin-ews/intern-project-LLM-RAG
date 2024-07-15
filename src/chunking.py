@@ -1,10 +1,13 @@
+import os
+import shutil
 import nltk
 import ollama
 import numpy as np
 import faiss
+from langchain.evaluation import load_evaluator
 from langchain_community.document_loaders import DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS, Chroma
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -38,11 +41,22 @@ def split_text(documents: list[Document]):
 
     return chunks
 
+CHROMA_PATH = "chroma"
+def save_to_chroma(chunks: list[Document]):
+    if os.path.exists(CHROMA_PATH):
+        shutil.rmtree(CHROMA_PATH)
+
+    db = Chroma.from_documents(
+        chunks, OllamaEmbeddings(), persist_directory=CHROMA_PATH
+    )
+    db.persist()
+    print(f"Saved{len(chunks)} chunks to {CHROMA_PATH}.")
+
 # Instantiate the embedding model
 embedder = OllamaEmbeddings()
 
 # Create the vector store and fill it with embeddings
-vector = FAISS.from_documents(docs, embedder)
+vector = FAISS.from_documents(documents, embedder)
 retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
 # Define llm
@@ -62,28 +76,6 @@ Helpful Answer:"""
 
 def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
-
-
-def split_text_into_chunks(text, max_chunk_size=100):
-    sentences = nltk.tokenize.sent_tokenize(text)
-    chunks = []
-    current_chunk = []
-    current_length = 0
-
-    for sentence in sentences:
-        sentence_length = len(sentence)
-        if current_length + sentence_length <= max_chunk_size:
-            current_chunk.append(sentence)
-            current_length += sentence_length
-        else:
-            chunks.append(' '.join(current_chunk))
-            current_chunk = [sentence]
-            current_length = sentence_length
-
-    if current_chunk:
-        chunks.append(' '.join(current_chunk))
-
-    return chunks
 
 text = "Your long text goes here. It will be split into smaller chunks while maintaining sentence structure. This helps in ensuring the coherence of each chunk."
 
