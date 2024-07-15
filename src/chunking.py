@@ -1,4 +1,7 @@
 import nltk
+import ollama
+import numpy as np
+import faiss
 from langchain_community.document_loaders import DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
