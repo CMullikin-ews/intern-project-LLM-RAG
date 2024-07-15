@@ -79,10 +79,6 @@ def format_docs(docs):
 
 text = "Your long text goes here. It will be split into smaller chunks while maintaining sentence structure. This helps in ensuring the coherence of each chunk."
 
-chunks = split_text_into_chunks(text, max_chunk_size=100)
-for chunk in chunks:
-    print(chunk)
-    print("---")
 
     #function to load the vectordatabase
 def load_knowledgeBase():
@@ -134,3 +130,5 @@ if __name__=='__main__':
                         | llm
                         | StrOutputParser()
                     )
+                response=rag_chain.invoke(query)
+                sl.write(response)
