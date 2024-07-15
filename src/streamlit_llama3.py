@@ -9,14 +9,15 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
-import os
-os.system("ollama pull llama3")
+# import os
+# os.system("ollama pull llama3")
 
 #function to load the vectordatabase
 def load_knowledgeBase():
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
         DB_FAISS_PATH = '../vectorstore'
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+        db = FAISS.load_local(DB_FAISS_PATH, embeddings, #allow_dangerous_deserialization=True
+                              )
         return db
         
 #function to load the OPENAI LLM
