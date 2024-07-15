@@ -15,6 +15,7 @@ from langchain.chains.llm import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 import gradio as gr
 from langchain.prompts import PromptTemplate
+import streamlit as sl
 
 # Load the PDF
 loader = PDFPlumberLoader("random machine learing pdf.pdf")
@@ -76,18 +77,6 @@ def respond(question,history):
     return qa(question)["result"]
 
 
-gr.ChatInterface(
-    respond,
-    chatbot=gr.Chatbot(height=500),
-    textbox=gr.Textbox(placeholder="Ask me question related to Machine learning", container=False, scale=7),
-    title="Machine learning Chatbot",
-    examples=["What are different kinds of Machine learning capabilities", "What is AI"],
-    cache_examples=True,
-    retry_btn=None,
-
-).launch(share = True)
-
-
 def split_text_into_chunks(text, max_chunk_size=100):
     sentences = nltk.tokenize.sent_tokenize(text)
     chunks = []
@@ -115,3 +104,54 @@ chunks = split_text_into_chunks(text, max_chunk_size=100)
 for chunk in chunks:
     print(chunk)
     print("---")
+
+    #function to load the vectordatabase
+def load_knowledgeBase():
+        embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+        DB_FAISS_PATH = '../vectorstore'
+        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+        return db
+        
+#function to load the OPENAI LLM
+def load_llm():
+        llm = Ollama(model="llama3")
+        return llm
+
+#creating prompt template using langchain
+def load_prompt():
+        prompt = """ You need to answer the question in the sentence as same as in the  pdf content. . 
+        Given below is the context and question of the user.
+        context = {context}
+        question = {question}
+        if the answer is not in the pdf answer "Sorry, I'm not sure how to respond to this"
+         """
+        prompt = ChatPromptTemplate.from_template(prompt)
+        return prompt
+
+
+def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
+
+
+if __name__=='__main__':
+        sl.header("welcome to the 📝PDF bot")
+        sl.write("🤖 You can chat by entering your queries ")
+        knowledgeBase=load_knowledgeBase()
+        llm=load_llm()
+        prompt=load_prompt()
+        query=sl.text_input('Enter some text')
+        
+        
+        if(query):
+                #getting only the chunks that are similar to the query for llm to produce the output
+                similar_embeddings=knowledgeBase.similarity_search(query)
+                similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+                
+                #creating the chain for integrating llm,prompt,stroutputparser
+                retriever = similar_embeddings.as_retriever()
+                rag_chain = (
+                        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                        | prompt
+                        | llm
+                        | StrOutputParser()
+                    )
