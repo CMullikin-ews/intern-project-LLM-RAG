@@ -1,36 +1,45 @@
 import nltk
-import ollama
-import numpy as np
-import faiss
-from langchain_community.document_loaders import PDFPlumberLoader, PyPDFLoader
+from langchain_community.document_loaders import DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
-from langchain.chains.llm import LLMChain
-from langchain.chains.combine_documents.stuff import StuffDocumentsChain
-import gradio as gr
-from langchain.prompts import PromptTemplate
+from langchain.schema import Document
 import streamlit as sl
 
+DATA_PATH = "data/books"
+
 # Load the PDF
-loader = PDFPlumberLoader("random machine learing pdf.pdf")
-docs = loader.load()
+def load_documents():
+    loader = DirectoryLoader(DATA_PATH, glob="*.md")
+    docs = loader.load()
+    return docs
 
 # Split into chunks
-text_splitter = RecursiveCharacterTextSplitter(OllamaEmbeddings())
-documents = text_splitter.split_documents(docs)
+def split_text(documents: list[Document]):  
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000,
+        chunk_overlap=500,
+        length_function=len,
+        add_start_index=True
+    )
+    chunks = text_splitter.split_documents(documents)
+    print(f"Split{len(documents)} documents into {len(chunks)} chunks.")
 
+    document = chunks[10]
+    print(document.page_content)
+    print(document.metadata)
+
+    return chunks
 
 # Instantiate the embedding model
 embedder = OllamaEmbeddings()
 
 # Create the vector store and fill it with embeddings
-vector = FAISS.from_documents(documents, embedder)
+vector = FAISS.from_documents(docs, embedder)
 retriever = vector.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
 # Define llm
@@ -48,33 +57,8 @@ Question: {question}
 
 Helpful Answer:"""
 
-QA_CHAIN_PROMPT = PromptTemplate.from_template(prompt) 
-
-llm_chain = LLMChain(
-                  llm=llm, 
-                  prompt=QA_CHAIN_PROMPT, 
-                  callbacks=None, 
-                  verbose=True)
-
-document_prompt = PromptTemplate(
-    input_variables=["page_content", "source"],
-    template="Context:\ncontent:{page_content}\nsource:{source}",
-)
-
-combine_documents_chain = StuffDocumentsChain(
-                  llm_chain=llm_chain,
-                  document_variable_name="context",
-                  document_prompt=document_prompt,
-                  callbacks=None)
-              
-qa = RetrievalQA(
-                  combine_documents_chain=combine_documents_chain,
-                  verbose=True,
-                  retriever=retriever,
-                  return_source_documents=True)
-
-def respond(question,history):
-    return qa(question)["result"]
+def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
 
 
 def split_text_into_chunks(text, max_chunk_size=100):
