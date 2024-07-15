@@ -88,8 +88,6 @@ gr.ChatInterface(
 ).launch(share = True)
 
 
-
-
 def split_text_into_chunks(text, max_chunk_size=100):
     sentences = nltk.tokenize.sent_tokenize(text)
     chunks = []
