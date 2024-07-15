@@ -11,7 +11,6 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain.prompts import PromptTemplate
 import os
-os.system("ollama pull llama3")
 
 #function to load the vectordatabase
 def load_knowledgeBase():
