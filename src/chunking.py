@@ -10,6 +10,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain.schema import Document
+from streamlit_llama3 import format_docs
 
 DATA_PATH = "random machine learning.pdf"
 CHROMA_PATH = "chroma"
