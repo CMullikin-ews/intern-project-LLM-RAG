@@ -53,7 +53,6 @@ for i, chunk in enumerate(split_texts):
 def save_to_chroma(chunks: List[str]):
     if os.path.exists(CHROMA_PATH):
         shutil.rmtree(CHROMA_PATH)
-    
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     document_chunks = [Document(page_content=chunk) for chunk in chunks]
     db = Chroma.from_documents(document_chunks, embeddings, persist_directory=CHROMA_PATH)
