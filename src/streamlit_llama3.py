@@ -89,11 +89,12 @@ def format_docs(docs):
 if __name__=='__main__':
         sl.header("welcome to the 📝PDF bot")
         sl.write("🤖 You can chat by entering your queries ")
-        create_knowledgeBase()
+        # create_knowledgeBase()
         knowledgeBase=load_knowledgeBase()
         llm=load_llm()
         prompt=load_prompt()
         query=sl.text_input('Enter some text')
+        
         
         
         if(query):
