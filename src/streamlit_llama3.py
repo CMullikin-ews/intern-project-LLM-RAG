@@ -24,13 +24,31 @@ def load_documents():
     docs = loader.load()
     return docs
 
-def split_text(documents: List[str], text, max_tokens=512):
-    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-    tokens = tokenizer.encode(text)
-    splits = [tokens[i:i + max_tokens] for i in range(0, len(tokens), max_tokens)]
-    return [tokenizer.decode(split) for split in splits]
+def split_text(text, max_length=512, chunk_overlap=50):
+    """
+    Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
+    
+    Parameters:
+        text (str): The input text to be split.
+        max_length (int): The maximum length of each chunk.
+        chunk_overlap (int): The number of characters to overlap between chunks.
+        
+    Returns:
+        List[str]: A list of text chunks.
+    """
+    splitter = RecursiveCharacterTextSplitter(
+        max_length=max_length,
+        chunk_overlap=chunk_overlap
+    )
+    chunks = splitter.split_text(text)
+    return chunks
 
-split_texts = split_text("Your long text here.")
+# Example usage
+text = "Your long text here."
+split_texts = split_text(text, max_length=512, chunk_overlap=50)
+
+for i, chunk in enumerate(split_texts):
+    print(f"Chunk {i+1}:\n{chunk}\n")
 
 def save_to_chroma(chunks: List[str]):
     if os.path.exists(CHROMA_PATH):
