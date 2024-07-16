@@ -9,8 +9,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
-# import os
-# os.system("ollama pull llama3")
+import os
+os.system("ollama pull llama3")
 
 #function to load the vectordatabase
 def load_knowledgeBase():
