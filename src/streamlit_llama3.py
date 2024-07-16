@@ -14,6 +14,7 @@ import os
 import shutil
 from typing import List
 from langchain.schema import Document
+from transformers import GPT2Tokenizer
 
 DATA_PATH = "random_machine_learning_pdf.pdf"
 CHROMA_PATH = "chroma"
@@ -23,8 +24,13 @@ def load_documents():
     docs = loader.load()
     return docs
 
-def split_text(documents: List[str]):
-    return documents  # Placeholder function, replace with actual text splitting logic
+def split_text(documents: List[str], text, max_tokens=512):
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    tokens = tokenizer.encode(text)
+    splits = [tokens[i:i + max_tokens] for i in range(0, len(tokens), max_tokens)]
+    return [tokenizer.decode(split) for split in splits]
+
+split_texts = split_text("Your long text here.")
 
 def save_to_chroma(chunks: List[str]):
     if os.path.exists(CHROMA_PATH):
