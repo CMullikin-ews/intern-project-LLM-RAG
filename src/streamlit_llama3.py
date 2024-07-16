@@ -42,7 +42,8 @@ def split_text(text, max_length=512, chunk_overlap=50, keep_separator=True):
         chunk_overlap=chunk_overlap,
         keep_separator=keep_separator
     )
-    return splitter.split(text)
+    chunks = splitter.split_text(text)
+    return chunks
 
 # Query Input
 text = "Your long text here."
