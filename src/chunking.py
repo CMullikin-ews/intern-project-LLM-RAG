@@ -11,7 +11,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain.schema import Document
 
-DATA_PATH = "random_machine_learning_pdf.pdf"
+DATA_PATH = "random machine learing pdf.pdf"
 CHROMA_PATH = "chroma"
 
 def load_documents():

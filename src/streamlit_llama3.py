@@ -1,6 +1,7 @@
 #import Essential dependencies
 import streamlit as sl
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS, Chroma
 from langchain.chains import RetrievalQA
@@ -16,15 +17,17 @@ from typing import List
 from langchain.schema import Document
 from transformers import GPT2Tokenizer
 
-DATA_PATH = "random_machine_learing_pdf.pdf"
+DATA_PATH = "random machine learing pdf.pdf"
 DB_FAISS_PATH = '../vectorstore'
 CHROMA_PATH = "chroma"
 
-def load_documents():
+def load_documents(DATA_PATH):
     loader = DirectoryLoader(DATA_PATH, glob="*.md")
     docs = loader.load()
     return docs
 
+directory_path = '/path/to/your/documents'
+docs = load_documents(DATA_PATH)
 def split_text(text, max_length=512, chunk_overlap=50):
     """
     Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
@@ -94,30 +97,30 @@ def format_docs(docs):
 
 
 if __name__=='__main__':
-        sl.header("welcome to the 📝PDF bot")
-        sl.write("🤖 You can chat by entering your queries ")
-        create_knowledgeBase()
-        knowledgeBase=load_knowledgeBase()
-        llm=load_llm()
-        prompt=load_prompt()
-        query=sl.text_input('Enter some text')
+    sl.header("welcome to the 📝PDF bot")
+    sl.write("🤖 You can chat by entering your queries ")
+    create_knowledgeBase()
+    knowledgeBase=load_knowledgeBase()
+    llm=load_llm()
+    prompt=load_prompt()
+    query=sl.text_input('Enter some text')
         
         
-        if(query):
-                #getting only the chunks that are similar to the query for llm to produce the output
-                similar_embeddings=knowledgeBase.similarity_search(query)
-                similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+    if(query):
+            #getting only the chunks that are similar to the query for llm to produce the output
+            similar_embeddings=knowledgeBase.similarity_search(query)
+            similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
                 
-                #creating the chain for integrating llm,prompt,stroutputparser
-                retriever = similar_embeddings.as_retriever()
-                rag_chain = (
-                        {"context": retriever | format_docs, "question": RunnablePassthrough()}
-                        | prompt
-                        | llm
-                        | StrOutputParser()
-                    )
+            #creating the chain for integrating llm,prompt,stroutputparser
+            retriever = similar_embeddings.as_retriever()
+            rag_chain = (
+                    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                    | prompt
+                    | llm
+                    | StrOutputParser()
+                )
                 
-                response=rag_chain.invoke(query)
-                sl.write(response)
+            response=rag_chain.invoke(query)
+            sl.write(response)
                 
                 
