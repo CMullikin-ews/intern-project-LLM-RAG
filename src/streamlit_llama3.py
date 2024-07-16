@@ -25,7 +25,7 @@ def load_documents():
     docs = loader.load()
     return docs
 
-def split_text(text, max_length=512, chunk_overlap=50):
+def split_text(text, max_length=512, chunk_overlap=50, keep_separator=True):
     """
     Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
     
@@ -39,10 +39,10 @@ def split_text(text, max_length=512, chunk_overlap=50):
     """
     splitter = RecursiveCharacterTextSplitter(
         max_length=max_length,
-        chunk_overlap=chunk_overlap
+        chunk_overlap=chunk_overlap,
+        keep_separator=keep_separator
     )
-    chunks = splitter.split_text(text)
-    return chunks
+    return splitter.split(text)
 
 # Query Input
 text = "Your long text here."
@@ -52,11 +52,11 @@ for i, chunk in enumerate(split_texts):
     print(f"Chunk {i+1}:\n{chunk}\n")
 
 def create_knowledgeBase():
-        docs = load_documents()
-        chunks = split_text(docs)
-        embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
-        vectorstore.save_local(DB_FAISS_PATH)
+    docs = load_documents()
+    chunks = split_text(docs)
+    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
+    vectorstore.save_local(DB_FAISS_PATH)
 
 def save_to_chroma(chunks: List[str]):
     if os.path.exists(CHROMA_PATH):
