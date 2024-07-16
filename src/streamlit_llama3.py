@@ -17,6 +17,7 @@ from langchain.schema import Document
 from transformers import GPT2Tokenizer
 
 DATA_PATH = "random_machine_learning_pdf.pdf"
+DB_FAISS_PATH = '../vectorstore'
 CHROMA_PATH = "chroma"
 
 def load_documents():
@@ -43,12 +44,19 @@ def split_text(text, max_length=512, chunk_overlap=50):
     chunks = splitter.split_text(text)
     return chunks
 
-# Example usage
+# Query Input
 text = "Your long text here."
 split_texts = split_text(text, max_length=512, chunk_overlap=50)
 
 for i, chunk in enumerate(split_texts):
     print(f"Chunk {i+1}:\n{chunk}\n")
+
+def create_knowledgeBase():
+        docs = load_documents()
+        chunks = split_text(docs)
+        embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+        vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
+        vectorstore.save_local(DB_FAISS_PATH)
 
 def save_to_chroma(chunks: List[str]):
     if os.path.exists(CHROMA_PATH):
@@ -61,7 +69,6 @@ def save_to_chroma(chunks: List[str]):
 #function to load the vectordatabase
 def load_knowledgeBase():
     embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-    DB_FAISS_PATH = '../vectorstore'
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
         
@@ -89,6 +96,7 @@ def format_docs(docs):
 if __name__=='__main__':
         sl.header("welcome to the 📝PDF bot")
         sl.write("🤖 You can chat by entering your queries ")
+        create_knowledgeBase()
         knowledgeBase=load_knowledgeBase()
         llm=load_llm()
         prompt=load_prompt()
