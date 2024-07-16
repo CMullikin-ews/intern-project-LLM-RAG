@@ -3,7 +3,7 @@ import streamlit as sl
 import os
 import shutil
 from typing import List
-from langchain_community.document_loaders.directory import DirectoryLoader
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_community.vectorstores import FAISS, Chroma
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
@@ -19,8 +19,8 @@ DATA_PATH = "/path/to/your/documents"
 DB_FAISS_PATH = './vectorstore'
 CHROMA_PATH = "./chroma"
 
-def load_documents(data_path):
-    loader = DirectoryLoader(data_path, glob="*.md")
+def load_documents():
+    loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
     docs = loader.load()
     return docs
 
