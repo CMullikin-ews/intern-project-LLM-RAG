@@ -1,7 +1,7 @@
 #import Essential dependencies
 import streamlit as sl
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS, Chroma
 from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
