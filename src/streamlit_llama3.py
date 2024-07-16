@@ -43,30 +43,30 @@ def save_to_chroma(chunks: List[str]):
 
 #function to load the vectordatabase
 def load_knowledgeBase():
-        embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        DB_FAISS_PATH = '../vectorstore'
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
-        return db
+    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    DB_FAISS_PATH = '../vectorstore'
+    db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+    return db
         
 #function to load the OPENAI LLM
 def load_llm():
-        llm = Ollama(model="llama3")
-        return llm
+    llm = Ollama(model="llama3")
+    return llm
 
 #creating prompt template using langchain
 def load_prompt():
-        prompt = """ You need to answer the question in the sentence as same as in the  pdf content. . 
-        Given below is the context and question of the user.
-        context = {context}
-        question = {question}
-        if the answer is not in the pdf answer "Sorry, I'm not sure how to respond to this"
-         """
-        prompt = ChatPromptTemplate.from_template(prompt)
-        return prompt
+    prompt = """ You need to answer the question in the sentence as same as in the  pdf content. . 
+    Given below is the context and question of the user.
+    context = {context}
+    question = {question}
+    if the answer is not in the pdf answer "Sorry, I'm not sure how to respond to this"
+    """
+    prompt = ChatPromptTemplate.from_template(prompt)
+    return prompt
 
 
 def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
+    return "\n\n".join(doc.page_content for doc in docs)
 
 
 if __name__=='__main__':
