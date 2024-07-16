@@ -1,8 +1,8 @@
 #import Essential dependencies
 import streamlit as sl
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS, Chroma
 from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -11,6 +11,31 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain.prompts import PromptTemplate
 import os
+import shutil
+from typing import List
+from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.vectorstores import FAISS, Chroma
+from langchain.schema import Document
+
+DATA_PATH = "random_machine_learning_pdf.pdf"
+CHROMA_PATH = "chroma"
+
+def load_documents():
+    loader = DirectoryLoader(DATA_PATH, glob="*.md")
+    docs = loader.load()
+    return docs
+
+def split_text(documents: List[str]):
+    return documents  # Placeholder function, replace with actual text splitting logic
+
+def save_to_chroma(chunks: List[str]):
+    if os.path.exists(CHROMA_PATH):
+        shutil.rmtree(CHROMA_PATH)
+    
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    document_chunks = [Document(page_content=chunk) for chunk in chunks]
+    db = Chroma.from_documents(document_chunks, embeddings, persist_directory=CHROMA_PATH)
+    return db
 
 #function to load the vectordatabase
 def load_knowledgeBase():
