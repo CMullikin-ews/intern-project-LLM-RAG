@@ -62,7 +62,7 @@ def create_knowledgeBase():
 #function to load the vectordatabase
 def load_knowledgeBase():
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+        db = FAISS.load_local(DB_FAISS_PATH, embeddings)
         return db
         
 #function to load the OPENAI LLM
