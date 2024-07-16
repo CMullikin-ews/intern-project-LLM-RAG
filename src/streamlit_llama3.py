@@ -13,8 +13,6 @@ from langchain.prompts import PromptTemplate
 import os
 import shutil
 from typing import List
-from langchain_community.document_loaders import DirectoryLoader
-from langchain_community.vectorstores import FAISS, Chroma
 from langchain.schema import Document
 
 DATA_PATH = "random_machine_learning_pdf.pdf"
