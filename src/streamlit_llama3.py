@@ -15,7 +15,7 @@ from langchain.chains import RetrievalQA
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 #Specify the correct path to your documents directory
-DATA_PATH = "/path/to/your/documents"
+DATA_PATH = '../data'
 DB_FAISS_PATH = './vectorstore'
 CHROMA_PATH = "./chroma"
 
