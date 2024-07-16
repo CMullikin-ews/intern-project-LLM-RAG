@@ -1,7 +1,7 @@
 #import Essential dependencies
 import streamlit as sl
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain_text_splitters.character import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS, Chroma
 from langchain.chains import RetrievalQA
 from langchain.prompts import ChatPromptTemplate
@@ -16,7 +16,7 @@ from typing import List
 from langchain.schema import Document
 from transformers import GPT2Tokenizer
 
-DATA_PATH = "random_machine_learning_pdf.pdf"
+DATA_PATH = "random_machine_learing_pdf.pdf"
 DB_FAISS_PATH = '../vectorstore'
 CHROMA_PATH = "chroma"
 
@@ -25,7 +25,7 @@ def load_documents():
     docs = loader.load()
     return docs
 
-def split_text(text, max_length=512, chunk_overlap=50, keep_separator=True):
+def split_text(text, max_length=512, chunk_overlap=50):
     """
     Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
     
@@ -38,9 +38,8 @@ def split_text(text, max_length=512, chunk_overlap=50, keep_separator=True):
         List[str]: A list of text chunks.
     """
     splitter = RecursiveCharacterTextSplitter(
-        max_length=max_length,
-        chunk_overlap=chunk_overlap,
-        keep_separator=keep_separator
+        chunk_size=max_length,
+        chunk_overlap=chunk_overlap
     )
     chunks = splitter.split_text(text)
     return chunks
