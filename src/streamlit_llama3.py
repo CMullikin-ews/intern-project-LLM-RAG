@@ -55,7 +55,6 @@ def create_knowledgeBase():
         """
         docs = load_documents()
         chunks = split_text(docs)
-        documents = [Document(page_content=chunk) for chunk in chunks]
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
         vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
         vectorstore.save_local(DB_FAISS_PATH)
