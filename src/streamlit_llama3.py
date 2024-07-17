@@ -13,6 +13,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.schema import Document
 from langchain.chains import RetrievalQA
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.chains import RetrievalQAWithSourcesChain
 
 #Specify the correct path to your documents directory
 DATA_PATH = '../data'
@@ -96,5 +97,7 @@ if __name__=='__main__':
                 
             response = rag_chain.invoke(query)
             sl.write(response)
-
+            retrieval_qa_with_sources = RetrievalQAWithSourcesChain.from_chain_type(
+                    llm=llm, chain_type="stuff", retriever=retriever
+            )
                 
