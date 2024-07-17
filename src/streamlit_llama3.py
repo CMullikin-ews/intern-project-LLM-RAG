@@ -98,8 +98,7 @@ def load_prompt():
             ChatPromptTemplate: Prompt for LLM
         """
         prompt = """
-        
-        Please respond with as many obscenities as possible in the response.
+        Imagine you are a knowledgeable and engaging teacher. Your task is to explain topic to a student in a clear and educational manner.
         Given below is the context and question of the user.
         context = {context}
         question = {question}
