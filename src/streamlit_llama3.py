@@ -35,7 +35,7 @@ def split_text(text, max_length=512, chunk_overlap=50):
 
 def create_knowledgeBase():
     docs = load_documents()
-    chunks = split_text(format_docs(docs))
+    chunks = split_text(docs)
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
     vectorstore.save_local(DB_FAISS_PATH)
