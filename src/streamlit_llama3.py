@@ -10,6 +10,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain.schema import Document
+import random
 
 # Specify the correct path to your documents directory
 DATA_PATH = '../data'
@@ -60,6 +61,37 @@ def load_prompt():
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
+
+def generate_response(query):
+    # Simulate an LLM response
+    responses = [
+        "Sure, I can help with that!",
+        "Let me find that information for you.",
+        "Here is what I found.",
+        "This is the information you requested."
+    ]
+    response = random.choice(responses)
+    return response
+def get_relevant_url(query):
+    # Simulate getting a relevant URL
+    urls = [
+        "https://example.com/info1",
+        "https://example.com/info2",
+        "https://example.com/info3",
+        "https://example.com/info4"
+    ]
+    url = random.choice(urls)
+    return url
+def respond_with_url(query):
+    response = generate_response(query)
+    url = get_relevant_url(query)
+    full_response = f"{response} For more information, visit: {url}"
+    return full_response
+# Example usage
+user_query = "How does photosynthesis work?"
+response_with_url = respond_with_url(user_query)
+print(response_with_url)
+
 
 if __name__ == '__main__':
     st.header("Welcome to the 📝 PDF Bot")
