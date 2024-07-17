@@ -14,6 +14,7 @@ import os
 import shutil
 from typing import List
 from langchain.schema import Document
+os.system("ollama pull llama3")
 
 # Specify the correct path to your documents directory
 DATA_PATH = '../data'
