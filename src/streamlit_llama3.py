@@ -30,7 +30,7 @@ def load_documents():
         docs = loader.load()
         return docs
 
-def split_text(text, max_length=512, chunk_overlap=50):
+def split_text(docs, chunk_size=512, chunk_overlap=50):
         """
         Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
         
@@ -43,10 +43,10 @@ def split_text(text, max_length=512, chunk_overlap=50):
                 List[str]: A list of text chunks.
         """
         splitter = RecursiveCharacterTextSplitter(
-                max_length=max_length,
+                chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap
         )
-        chunks = splitter.split_text(text)
+        chunks = splitter.split_documents(docs)
         return chunks
 
 def create_knowledgeBase():
@@ -55,8 +55,9 @@ def create_knowledgeBase():
         """
         docs = load_documents()
         chunks = split_text(docs)
+        documents = [Document(page_content=chunk) for chunk in chunks]
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
+        vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
         vectorstore.save_local(DB_FAISS_PATH)
 
 # def save_to_chroma(chunks: List[str]):
@@ -97,7 +98,8 @@ def load_prompt():
         Returns:
             ChatPromptTemplate: Prompt for LLM
         """
-        prompt = """ "Imagine you are a knowledgeable and engaging teacher. Your task is to explain topic to a student in a clear and educational manner.
+        prompt = """
+        Imagine you are a knowledgeable and engaging teacher. Your task is to explain topic to a student in a clear and educational manner.
         Given below is the context and question of the user.
         context = {context}
         question = {question}
@@ -120,8 +122,8 @@ def format_docs(docs):
 
 if __name__=='__main__':
         # Creates header for streamlit app and writes to it
-        sl.header("welcome to the 📝PDF bot")
-        sl.write("🤖 You can chat by entering your queries ")
+        sl.header("Welcome to the 📝PDF bot")
+        sl.write("🤖 You can chat by entering your queries")
         
         # Creates and loads all of components for RAG system
         create_knowledgeBase()
