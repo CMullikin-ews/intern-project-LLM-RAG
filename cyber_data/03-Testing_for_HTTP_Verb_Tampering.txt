@@ -1,0 +1,1 @@
+Home > Latest > 4-Web Application Security Testing > 07-Input Validation Testing Testing for HTTP Verb Tampering ID WSTG-INPV-03 This content has been merged into: Test HTTP Methods
