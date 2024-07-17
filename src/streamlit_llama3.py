@@ -34,8 +34,8 @@ def split_text(text, max_length=512, chunk_overlap=50):
     return chunks
 
 def create_knowledgeBase():
-    docs = load_documents(DATA_PATH)
-    chunks = split_text(format_docs(docs))
+    docs = load_documents()
+    chunks = split_text(docs)
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
     vectorstore.save_local(DB_FAISS_PATH)
@@ -73,17 +73,13 @@ def format_docs(docs):
 if __name__=='__main__':
     sl.header("Welcome to the 📝PDF bot")
     sl.write("🤖 You can chat by entering your queries ")
-    
-    if not os.path.exists(DATA_PATH):
-        sl.write(f"Error: Directory '{DATA_PATH}' not found.")
-    else:
-        create_knowledgeBase()
-        knowledgeBase = load_knowledgeBase()
-        llm = load_llm()
-        prompt = load_prompt()
-        query = sl.text_input('Enter some text')
+    create_knowledgeBase()
+    knowledgeBase = load_knowledgeBase()
+    llm = load_llm()
+    prompt = load_prompt()
+    query = sl.text_input('Enter some text')
         
-        if query:
+    if query:
             similar_embeddings = knowledgeBase.similarity_search(query)
             similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
                 
@@ -97,7 +93,4 @@ if __name__=='__main__':
                 
             response = rag_chain.invoke(query)
             sl.write(response)
-            retrieval_qa_with_sources = RetrievalQAWithSourcesChain.from_chain_type(
-                    llm=llm, chain_type="stuff", retriever=retriever
-            )
                 
