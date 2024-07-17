@@ -21,69 +21,77 @@ DB_FAISS_PATH = './vectorstore'
 # CHROMA_PATH = "./chroma"
 
 def load_documents():
-        loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
-        docs = loader.load()
-        return docs
+    loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
+    docs = loader.load()
+    return docs
 
 def split_text(docs, max_length=512, chunk_overlap=50):
-        splitter = RecursiveCharacterTextSplitter(
+    splitter = RecursiveCharacterTextSplitter(
             chunk_size=max_length,
             chunk_overlap=chunk_overlap
         )
-        chunks = []
-        return chunks
+    chunks = []
+    return chunks
 
 def create_knowledgeBase():
-        docs = load_documents()
-        chunks = split_text(docs)
-        embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        documents = [Document(page_content=chunk) for chunk in chunks]
-        vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
-        vectorstore.save_local(DB_FAISS_PATH)
+    docs = load_documents()
+    chunks = split_text(docs)
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    documents = [Document(page_content=chunk) for chunk in chunks]
+    vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
+    vectorstore.save_local(DB_FAISS_PATH)
 
 def load_knowledgeBase():
-        embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
-        return db
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+    return db
 
 def load_llm():
-        llm = Ollama(model="llama3")
-        return llm
+    llm = Ollama(model="llama3")
+    return llm
 
 def load_prompt():
-        prompt = """
-        You need to answer the question in the sentence as same as in the PDF content.
-        Given below is the context and question of the user.
-        context = {context}
-        question = {question}
-        If the answer is not in the PDF, answer "Sorry, I'm not sure how to respond to this"
-        """
-        prompt = ChatPromptTemplate.from_template(prompt)
-        return prompt
+    prompt = """
+    You need to answer the question in the sentence as same as in the PDF content.
+    Given below is the context and question of the user.
+    context = {context}
+    question = {question}
+    If the answer is not in the PDF, answer "Sorry, I'm not sure how to respond to this"
+    """
+    prompt = ChatPromptTemplate.from_template(prompt)
+    return prompt
 
 def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
+    return "\n\n".join(doc.page_content for doc in docs)
 
 if __name__=='__main__':
-        st.header("Welcome to the 📝PDF bot")
-        st.write("🤖 You can chat by entering your queries")   
-        knowledgeBase = load_knowledgeBase()
-        llm = load_llm()
-        prompt = load_prompt()
-        query = st.text_input('Enter some text')
-    
-        if query:
-            similar_embeddings = knowledgeBase.similarity_search(query)
-            documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
-            formatted_docs = format_docs(documents)
+      # Creates header for streamlit app and writes to it
+        st.header("welcome to the 📝PDF bot")
+        st.write("🤖 You can chat by entering your queries ")
         
-            retriever = knowledgeBase.as_retriever()
-            rag_chain = (
-                {"context": formatted_docs, "question": RunnablePassthrough(query)}
-                | prompt
-                | llm
-                | StrOutputParser()
-            )
+        # Creates and loads all of components for RAG system
+        create_knowledgeBase()
+        knowledgeBase=load_knowledgeBase()
+        llm=load_llm()
+        prompt=load_prompt()
         
-            response = rag_chain.invoke(query)
-            st.write(response)
+        # Creates text box for user to query data
+        query=sl.text_input('Enter some text')
+        
+        if(query):
+                # Gets most similar vectors from knowledge base to user query and turns into actual documents
+                similar_embeddings=knowledgeBase.similarity_search(query)
+                similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+                
+                # Defines chain together query, documents, prompt, and LLM to form process for generating response
+                retriever = similar_embeddings.as_retriever()
+                rag_chain = (
+                        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                        | prompt
+                        | llm
+                        | StrOutputParser()
+                    )
+                
+                # Calls chain and writes response to streamlit
+                response=rag_chain.invoke(query)
+                sl.write(response)
