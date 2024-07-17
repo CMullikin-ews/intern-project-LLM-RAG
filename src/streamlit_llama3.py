@@ -18,7 +18,7 @@ from langchain.chains import RetrievalQAWithSourcesChain
 #Specify the correct path to your documents directory
 DATA_PATH = '../data'
 DB_FAISS_PATH = './vectorstore'
-CHROMA_PATH = "./chroma"
+# CHROMA_PATH = "./chroma"
 
 def load_documents():
     loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
@@ -35,18 +35,18 @@ def split_text(text, max_length=512, chunk_overlap=50):
 
 def create_knowledgeBase():
     docs = load_documents()
-    chunks = split_text(docs)
+    chunks = split_text(format_docs(docs))
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
     vectorstore.save_local(DB_FAISS_PATH)
 
-def save_to_chroma(chunks: List[str]):
-    if os.path.exists(CHROMA_PATH):
-        shutil.rmtree(CHROMA_PATH)
-    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-    document_chunks = [Document(page_content=chunk) for chunk in chunks]
-    db = Chroma.from_documents(document_chunks, embeddings, persist_directory=CHROMA_PATH)
-    return db
+# def save_to_chroma(chunks: List[str]):
+#     if os.path.exists(CHROMA_PATH):
+#         shutil.rmtree(CHROMA_PATH)
+#     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+#     document_chunks = [Document(page_content=chunk) for chunk in chunks]
+#     db = Chroma.from_documents(document_chunks, embeddings, persist_directory=CHROMA_PATH)
+#     return db
 
 def load_knowledgeBase():
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
