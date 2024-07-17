@@ -17,20 +17,21 @@ from langchain.schema import Document
 
 # Specify the correct path to your documents directory
 DATA_PATH = '../data'
-DB_FAISS_PATH = './vectorstore'
-# CHROMA_PATH = "./chroma"
+DB_FAISS_PATH = '../vectorstore'
+# CHROMA_PATH = "../chroma"
 
 def load_documents():
     loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
     docs = loader.load()
     return docs
 
-def split_text(docs, max_length=512, chunk_overlap=50):
+def split_text(text, max_length=512, chunk_overlap=50):
     splitter = RecursiveCharacterTextSplitter(
             chunk_size=max_length,
             chunk_overlap=chunk_overlap
         )
     chunks = []
+    chunks = splitter.split_text(text)
     return chunks
 
 def create_knowledgeBase():
