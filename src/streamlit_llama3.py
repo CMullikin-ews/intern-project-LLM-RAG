@@ -1,18 +1,19 @@
 #import Essential dependencies
 import streamlit as st
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS, Chroma
+from langchain.chains import RetrievalQA
+from langchain.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.llms import Ollama
+from langchain.prompts import PromptTemplate
 import os
 import shutil
 from typing import List
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain.vectorstores import FAISS, Chroma
-from langchain.runnables import RunnablePassthrough
-from langchain.embeddings import OllamaEmbeddings
-from langchain.llms import Ollama
-from langchain.prompts import ChatPromptTemplate
-from langchain.output_parsers import StrOutputParser
 from langchain.schema import Document
-from langchain.chains import RetrievalQA
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Specify the correct path to your documents directory
 DATA_PATH = '../data'
