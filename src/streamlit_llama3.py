@@ -18,20 +18,20 @@ from langchain.schema import Document
 # Specify the correct path to your documents directory
 DATA_PATH = '../data'
 DB_FAISS_PATH = '../vectorstore'
-# CHROMA_PATH = "../chroma"
 
 def load_documents():
     loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
     docs = loader.load()
     return docs
 
-def split_text(text, max_length=512, chunk_overlap=50):
+def split_text(docs, max_length=512, chunk_overlap=50):
     splitter = RecursiveCharacterTextSplitter(
             chunk_size=max_length,
             chunk_overlap=chunk_overlap
         )
     chunks = []
-    chunks = splitter.split_text(text)
+    for doc in docs:
+        chunks.extend(splitter.split_text(doc.page_content))
     return chunks
 
 def create_knowledgeBase():
@@ -65,34 +65,42 @@ def load_prompt():
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-if __name__=='__main__':
+if __name__ == '__main__':
     # Creates header for streamlit app and writes to it
-    st.header("welcome to the 📝PDF bot")
-    st.write("🤖 You can chat by entering your queries ")
+    st.header("Welcome to the 📝 PDF Bot")
+    st.write("🤖 You can chat by entering your queries")
+
+    # Check if vectorstore exists, if not create it
+    if not os.path.exists(DB_FAISS_PATH):
+        create_knowledgeBase()
         
-    # Creates and loads all of components for RAG system
-    create_knowledgeBase()
-    knowledgeBase=load_knowledgeBase()
-    llm=load_llm()
-    prompt=load_prompt()
-        
+    # Load knowledge base and other components
+    knowledgeBase = load_knowledgeBase()
+    llm = load_llm()
+    prompt = load_prompt()
+
     # Creates text box for user to query data
-    query=st.text_input('Enter some text')
+    query = st.text_input('Enter some text')
+
+    if query:
+        # Gets most similar vectors from knowledge base to user query and turns into actual documents
+        similar_embeddings = knowledgeBase.similarity_search(query)
         
-    if(query):
-            # Gets most similar vectors from knowledge base to user query and turns into actual documents
-            similar_embeddings=knowledgeBase.similarity_search(query)
-            similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
-                
-            # Defines chain together query, documents, prompt, and LLM to form process for generating response
-            retriever = similar_embeddings.as_retriever()
-            rag_chain = (
-                    {"context": retriever | format_docs, "question": RunnablePassthrough()}
-                    | prompt
-                    | llm
-                    | StrOutputParser()
-                )
-                
-                # Calls chain and writes response to streamlit
-            response=rag_chain.invoke(query)
-            st.write(response)
+        # Turn the similar embeddings into documents
+        documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
+        
+        # Create a retriever
+        retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
+        
+        # Define the chain together with query, documents, prompt, and LLM to form process for generating response
+        rag_chain = (
+            {"context": retriever | format_docs, "question": RunnablePassthrough()}
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
+        
+        # Calls chain and writes response to streamlit
+        response = rag_chain.invoke(query)
+        st.write(response)
+
