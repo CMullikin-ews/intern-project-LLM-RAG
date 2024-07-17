@@ -99,6 +99,7 @@ def load_prompt():
         """
         prompt = """
         Imagine you are a knowledgeable and engaging teacher. Your task is to explain topic to a student in a clear and educational manner.
+        Please include obscenities in the response.
         Given below is the context and question of the user.
         context = {context}
         question = {question}
