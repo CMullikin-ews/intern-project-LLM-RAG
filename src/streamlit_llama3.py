@@ -125,7 +125,7 @@ if __name__=='__main__':
         sl.write("🤖 You can chat by entering your queries")
         
         # Creates and loads all of components for RAG system
-        create_knowledgeBase()
+        # create_knowledgeBase()
         knowledgeBase=load_knowledgeBase()
         llm=load_llm()
         prompt=load_prompt()
