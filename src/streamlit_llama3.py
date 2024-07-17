@@ -72,6 +72,7 @@ def generate_response(query):
     ]
     response = random.choice(responses)
     return response
+
 def get_relevant_url(query):
     # Simulate getting a relevant URL
     urls = [
@@ -82,16 +83,12 @@ def get_relevant_url(query):
     ]
     url = random.choice(urls)
     return url
+
 def respond_with_url(query):
     response = generate_response(query)
     url = get_relevant_url(query)
     full_response = f"{response} For more information, visit: {url}"
     return full_response
-# Example usage
-user_query = "How does photosynthesis work?"
-response_with_url = respond_with_url(user_query)
-print(response_with_url)
-
 
 if __name__ == '__main__':
     st.header("Welcome to the 📝 PDF Bot")
