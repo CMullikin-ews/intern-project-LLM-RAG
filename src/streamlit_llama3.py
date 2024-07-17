@@ -85,23 +85,23 @@ if __name__ == '__main__':
 
     if query:
         # Gets most similar vectors from knowledge base to user query and turns into actual documents
-        similar_embeddings = knowledgeBase.similarity_search(query)
+            similar_embeddings = knowledgeBase.similarity_search(query)
         
         # Turn the similar embeddings into documents
-        documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
+            documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
         
         # Create a retriever
-        retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
+            retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
         
         # Define the chain together with query, documents, prompt, and LLM to form process for generating response
-        rag_chain = (
-            {"context": retriever | format_docs, "question": RunnablePassthrough()}
-            | prompt
-            | llm
-            | StrOutputParser()
-        )
+            rag_chain = (
+                {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                | prompt
+                | llm
+                | StrOutputParser()
+            )
         
         # Calls chain and writes response to streamlit
-        response = rag_chain.invoke(query)
-        st.write(response)
+            response = rag_chain.invoke(query)
+            st.write(response)
 
