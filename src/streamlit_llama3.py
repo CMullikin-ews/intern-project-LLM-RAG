@@ -110,7 +110,7 @@ def create_knowledgeBase():
         """
         documents = load_documents()
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
+        vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings, allow_dangerous_deserialization=True)
         vectorstore.save_local(DB_FAISS_PATH)
 
 def load_knowledgeBase():
