@@ -1,0 +1,26 @@
+You can perform a directory brute force attack in order to discover any hidden files and directories on the webserver. Several tools are available to perform this attack:
+
+    Dirb
+
+    DirBuster
+
+    Gobuster
+
+This section shows how to use Gobuster. To use Gobuster, you need to provide a wordlist for Gobuster to run the directory scan with. This guide uses the popular wordlist collection called SecLists.
+
+    Return to your Kali SSH session in your terminal. Gobuster should be installed by default on Kali. On other Debian-based distributions, you can install it with apt:
+
+    sudo apt install gobuster -y
+
+    The wordlists from SecLists should be downloaded to your VM. On Kali, you can install the seclists package:
+
+    sudo apt install seclists -y
+
+    Installing this package places the wordlists in the /usr/share/seclists directory. Other methods for downloading the wordlists are provided in the SecLists GitHub repository
+
+    Perform the directory brute force attack against the web server with Gobuster. Replace $RAVEN_VM_IP in this command with your Raven VM’s IP:
+
+    gobuster dir --url http://$RAVEN_VM_IP --wordlist /usr/share/seclists/Discovery/Web-Content/big.txt
+
+    This command uses the big.txt wordlist that is part of the SecLists collection.
+

