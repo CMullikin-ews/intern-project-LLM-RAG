@@ -70,7 +70,7 @@ def create_directory_loader(file_type, directory_path):
         return DirectoryLoader(
         path=directory_path,
         glob=f"**/*{file_type}",
-        loader_cls=loaders[file_type]
+        loader_cls=loaders.get(file_type, UnstructuredFileLoader)
 )
 
 def load_documents():
