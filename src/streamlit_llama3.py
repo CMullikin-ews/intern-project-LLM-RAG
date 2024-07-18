@@ -121,7 +121,7 @@ def load_knowledgeBase():
             FAISS: vector store
         """
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings)
+        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         return db
         
 def load_llm():
