@@ -1,23 +1,70 @@
 # Packages used in RAG system
 import streamlit as sl
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain_community.document_loaders import DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS, Chroma
-from langchain.chains import RetrievalQA
+from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
-from langchain.prompts import PromptTemplate
 import os
-import shutil
-from typing import List
-from langchain.schema import Document
 
-DATA_PATH = '../data'
+# Location of the documents for the vector store and location of the vector store
+DATA_PATH = '../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
-# CHROMA_PATH = "chroma"
+
+# Specified loader for each type of file found in the cyber data directory (so far)
+loaders = {
+    '.php': UnstructuredFileLoader,
+    '.cs': UnstructuredFileLoader,
+    '': UnstructuredFileLoader,
+    '.c': UnstructuredFileLoader,
+    '.html': UnstructuredHTMLLoader,
+    '.md': UnstructuredMarkdownLoader,
+    '.tzt': UnstructuredFileLoader,
+    '.java': UnstructuredFileLoader,
+    '.txt': TextLoader,
+    '.ps1': UnstructuredFileLoader,
+    '.delphi': UnstructuredFileLoader,
+    '.asm': UnstructuredFileLoader,
+    '.TXT': TextLoader
+}
+
+def get_file_types(directory):
+        """
+        Traverses all of the files in specified directory and returns types of files that it finds
+
+        Args:
+            directory (str): Path to directory
+
+        Returns:
+            Set[str]: All of the file types that can be found in the directory
+        """
+        file_types = set()
+
+        for filename in os.listdir(directory):
+                if os.path.isfile(os.path.join(directory, filename)):
+                        _, ext = os.path.splitext(filename)
+                        file_types.add(ext)
+        return file_types
+
+def create_directory_loader(file_type, directory_path):
+        """
+        Creates and returns a DirectoryLoader using the loader specific to the file type provided
+        
+        Args:
+            file_type (str): Type of file to make loader for
+            directory_path (str): Path to directory
+
+        Returns:
+            DirectoryLoader: loader for the files in the directory provided
+        """
+        return DirectoryLoader(
+        path=directory_path,
+        glob=f"**/*{file_type}",
+        loader_cls=loaders[file_type]
+)
 
 def load_documents():
         """
@@ -26,9 +73,17 @@ def load_documents():
         Returns:
                 List[Document]: Array of documents
         """
-        loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
-        docs = loader.load()
-        return docs
+        file_types = get_file_types(DATA_PATH)
+        documents = []
+        
+        for file_type in file_types:
+                if file_type.strip() != "":
+                        loader = create_directory_loader(file_type, DATA_PATH)
+                        docs = loader.load()
+                        chunks = split_text(docs)
+                        if chunks != None and chunks != "" and len(chunks) > 0:
+                                documents.extend(chunks)
+        return documents
 
 def split_text(docs, chunk_size=512, chunk_overlap=50):
         """
@@ -53,20 +108,10 @@ def create_knowledgeBase():
         """
         Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
         """
-        docs = load_documents()
-        documents = split_text(docs)
+        documents = load_documents()
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
         vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
         vectorstore.save_local(DB_FAISS_PATH)
-
-# def save_to_chroma(chunks: List[str]):
-#     if os.path.exists(CHROMA_PATH):
-#         shutil.rmtree(CHROMA_PATH)
-
-#     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-#     document_chunks = [Document(page_content=chunk) for chunk in chunks]
-#     db = Chroma.from_documents(document_chunks, embeddings, persist_directory=CHROMA_PATH)
-#     return db
 
 def load_knowledgeBase():
         """
