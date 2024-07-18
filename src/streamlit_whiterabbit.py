@@ -138,7 +138,7 @@ def load_llm():
         Returns:
             WhiteRabbitNeo: LLM
         """
-        llm = Ollama(model="whiterabbit-neo")
+        llm = Ollama(model="jimscard/whiterabbit-neo")
         return llm
 
 #creating prompt template using langchain
