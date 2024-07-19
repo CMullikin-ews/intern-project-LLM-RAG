@@ -73,25 +73,6 @@ def create_directory_loader(file_type, directory_path):
         loader_cls=loaders.get(file_type, UnstructuredFileLoader)
 )
 
-def load_documents():
-        """
-        Loads in files from ../data directory and returns them
-
-        Returns:
-                List[Document]: Array of documents
-        """
-        file_types = get_file_types(DATA_PATH)
-        documents = []
-        
-        for file_type in file_types:
-                if file_type.strip() != "":
-                        loader = create_directory_loader(file_type, DATA_PATH)
-                        docs = loader.load()
-                        chunks = split_text(docs)
-                        if chunks != None and chunks != "" and len(chunks) > 0:
-                                documents.extend(chunks)
-        return documents
-
 def split_text(docs, chunk_size=512, chunk_overlap=50):
         """
         Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
@@ -110,6 +91,33 @@ def split_text(docs, chunk_size=512, chunk_overlap=50):
         )
         chunks = splitter.split_documents(docs)
         return chunks
+
+def load_documents():
+        """
+        Loads in files from ../data directory and returns them
+
+        Returns:
+                List[Document]: Array of documents
+        """
+        file_types = get_file_types(DATA_PATH)
+        documents = []
+        
+        for file_type in file_types:
+                if file_type.strip() != "":
+                        if file_type == '.json':
+                                loader_list = create_directory_loader(file_type, DATA_PATH)
+                                for loader in loader_list:
+                                        docs = loader.load()
+                                        chunks = split_text(docs)
+                                        if chunks != None and chunks != "" and len(chunks) > 0:
+                                                documents.extend(chunks)
+                        else:        
+                                loader = create_directory_loader(file_type, DATA_PATH)
+                                docs = loader.load()
+                                chunks = split_text(docs)
+                                if chunks != None and chunks != "" and len(chunks) > 0:
+                                        documents.extend(chunks)
+        return documents
 
 def create_knowledgeBase():
         """
@@ -130,7 +138,7 @@ def load_knowledgeBase():
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
         db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         return db
-        
+
 def load_llm():
         """
         Creates and returns Llama3 model
