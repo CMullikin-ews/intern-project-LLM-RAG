@@ -85,11 +85,19 @@ def load_documents():
         
         for file_type in file_types:
                 if file_type.strip() != "":
-                        loader = create_directory_loader(file_type, DATA_PATH)
-                        docs = loader.load()
-                        chunks = split_text(docs)
-                        if chunks != None and chunks != "" and len(chunks) > 0:
-                                documents.extend(chunks)
+                        if file_type == '.json':
+                                loader_list = create_directory_loader(file_type, DATA_PATH)
+                                for loader in loader_list:
+                                        docs = loader.load()
+                                        chunks = split_text(docs)
+                                        if chunks != None and chunks != "" and len(chunks) > 0:
+                                                documents.extend(chunks)
+                        else:        
+                                loader = create_directory_loader(file_type, DATA_PATH)
+                                docs = loader.load()
+                                chunks = split_text(docs)
+                                if chunks != None and chunks != "" and len(chunks) > 0:
+                                        documents.extend(chunks)
         return documents
 
 def split_text(docs, chunk_size=512, chunk_overlap=50):
