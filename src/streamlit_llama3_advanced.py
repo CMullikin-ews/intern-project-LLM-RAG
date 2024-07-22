@@ -13,12 +13,17 @@ from langchain.retrievers import BM25Retriever
 from langchain.schema import Document
 from typing import List
 
+import streamlit_llama3
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize LLM
 llm = Ollama(model='llama3')
+
+DATA_PATH = '../data'
+DB_FAISS_PATH = '../vectorstore'
 
 # Define the RAG pipeline
 class RAGPipeline:
