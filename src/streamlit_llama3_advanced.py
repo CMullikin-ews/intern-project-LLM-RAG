@@ -1,7 +1,6 @@
 import os
 import logging
 import streamlit as st
-import random
 from langchain_community.document_loaders import WebBaseLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -27,16 +26,14 @@ DB_FAISS_PATH = '../vectorstore'
 llm = Ollama(model='llama3')
 
 # Initialize document store
-document_store = FAISSDocumentStore(faiss_index_path="../../cyber_data", faiss_config_path="../vectorstore")
-
-document_store = FAISSDocumentStore(
+document_store = FAISS(
     faiss_index_path="../../cyber_data", 
     faiss_config_path="../vectorstore"
 )
 
 # Add documents to the store (this is an example; replace with your documents)
 documents = [
-    {"content": "../cyber_data", "meta": {"source": "Wikipedia"}},
+    {"content": "Document content goes here", "meta": {"source": "Wikipedia"}},  # Update content as needed
     # Add more documents as needed
 ]
 document_store.write_documents(documents)
