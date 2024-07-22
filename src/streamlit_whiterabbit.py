@@ -13,9 +13,10 @@ import os
 # Downloads and runs ollama, as well as pulling our embedding model and LLM
 os.system("curl -fsSL https://ollama.com/install.sh | sh")
 os.system("export OLLAMA_HOST=localhost:8888")
-# os.system("ollama serve")
-# os.system("ollama pull mxbai-embed-large")
-# os.system("ollama pull jimscard/whiterabbit-neo")
+os.system("sudo service ollama stop")
+os.system("ollama serve")
+os.system("ollama pull mxbai-embed-large")
+os.system("ollama pull jimscard/whiterabbit-neo")
 
 # Location of the documents for the vector store and location of the vector store
 DATA_PATH = '../../cyber_data'
