@@ -173,12 +173,9 @@ def format_docs(docs):
 
 if __name__=='__main__':
         # Downloads and runs ollama, as well as pulling our embedding model and LLM
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=127.0.0.1:33020 ollama list")
-        os.system("sudo service ollama stop")
-        os.system("ollama serve")
+        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("sudo systemctl start ollama")
         os.system("ollama pull mxbai-embed-large")
-        os.system("ollama pull jimscard/whiterabbit-neo")
         
         # Creates header for streamlit app and writes to it
         sl.header("Welcome to the 📝PDF bot")
