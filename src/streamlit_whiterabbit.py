@@ -13,9 +13,9 @@ import os
 # Downloads and runs ollama, as well as pulling our embedding model and LLM
 os.system("curl -fsSL https://ollama.com/install.sh | sh")
 os.system("export OLLAMA_HOST=localhost:8888")
-os.system("ollama serve")
-os.system("ollama pull mxbai-embed-large")
-os.system("ollama pull jimscard/whiterabbit-neo")
+# os.system("ollama serve")
+# os.system("ollama pull mxbai-embed-large")
+# os.system("ollama pull jimscard/whiterabbit-neo")
 
 # Location of the documents for the vector store and location of the vector store
 DATA_PATH = '../../cyber_data'
@@ -158,8 +158,8 @@ def load_prompt():
             ChatPromptTemplate: Prompt for LLM
         """
         prompt = """
-        Image you are a copilot for helping software developers by clearly defining and going through the steps to help them detect and neutralize viruses and other threats
-        Make sure to site the sources of the files used in constructing the response
+        You are an assistant for helping software developers by clearly defining and going through the steps to detect and neutralize viruses.
+        Make sure to site the documents the data originates from used in constructing the response.
         If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
          """
         prompt = ChatPromptTemplate.from_template(prompt)
