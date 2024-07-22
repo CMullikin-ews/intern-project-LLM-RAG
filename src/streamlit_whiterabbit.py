@@ -173,13 +173,14 @@ def format_docs(docs):
 
 if __name__=='__main__':
         # Downloads and runs ollama, as well as pulling our embedding model and LLM
+        # os.system("sudo rm -rf /usr/local/bin/ollama")
         # os.system("curl -fsSL https://ollama.com/install.sh | sh")
         # os.system("export OLLAMA_HOST=0.0.0.0")
         # os.system("sudo service ollama stop")
         # os.system("ollama serve")
         # os.system("ollama pull mxbai-embed-large")
-        os.system("ollama run mxbai-embed-large")
-        os.system("ollama run jimscard/whiterabbit-neo")
+        # os.system("ollama run mxbai-embed-large")
+        # os.system("ollama run jimscard/whiterabbit-neo")
         
         # Creates header for streamlit app and writes to it
         sl.header("Welcome to the 📝Computer Virus copilot")
