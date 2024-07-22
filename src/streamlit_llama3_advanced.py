@@ -18,24 +18,12 @@ from langchain.schema import Document
 from sklearn.metrics.pairwise import cosine_similarity
 from typing import List
 
-# Initialize Ollama LLM
-llm = Ollama(model='llama3')
-class RAGPipeline:
-    def __init__(self, llm, retriever):
-        self.llm = llm
-        self.retriever = retriever
-
-    def generate(self, query):
-        documents = self.retriever.get_relevant_documents(query)
-        # Process documents with the LLM
-        response = self.llm.generate(query, documents)
-        return response
-    
-retriever = BM25Retriever()
-pipeline = RAGPipeline(llm=llm, retriever=retriever)
 
 DATA_PATH = '../../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
+
+# Initialize Ollama LLM
+llm = Ollama(model='llama3')
 
 # Initialize document store
 document_store = InMemoryDocstore()
@@ -49,6 +37,17 @@ document_store.write_documents(documents)
 
 # Initialize retriever
 retriever = BM25Retriever(document_store=document_store)
+class RAGPipeline:
+    def __init__(self, llm, retriever):
+        self.llm = llm
+        self.retriever = retriever
+
+    def generate(self, query):
+        documents = self.retriever.get_relevant_documents(query)
+        # Process documents with the LLM
+        response = self.llm.generate(query, documents)
+        return response
+pipeline = RAGPipeline(llm=llm, retriever=retriever)
 
 # Define a prompt template for RAG
 prompt_template = PromptTemplate(
@@ -56,17 +55,28 @@ prompt_template = PromptTemplate(
     input_variables=["context", "question"]
 )
 
-# Create an LLM chain for RAG
-llm_chain = LLMChain(llm=llm, prompt=prompt_template)
+if __name__ == '__main__':
+    st.header("Welcome to the 📝 PDF Bot")
+    st.write("🤖 You can chat by entering your queries")
 
-# Initialize RAG pipeline
-rag_pipeline = RAGPipeline(retriever=retriever, generator=llm_chain)
+    if not os.path.exists(DB_FAISS_PATH):
+        streamlit_llama3.create_knowledgeBase()
 
-# Streamlit user interface
-st.title("Advanced RAG System with LangChain and Ollama")
+    knowledgeBase = streamlit_llama3.load_knowledgeBase()
+    llm = streamlit_llama3.load_llm()
+    prompt = streamlit_llama3.load_prompt()
 
-question = st.text_input("Enter your question:")
-if st.button("Get Answer"):
-    # Retrieve and generate answer using RAG pipeline
-    response = rag_pipeline.run({"question": question})
-    st.write("Answer:", response)
+    query = st.text_input('Enter some text')
+
+    if query:
+        similar_embeddings = knowledgeBase.similarity_search(query)
+        documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
+        retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
+        rag_chain = (
+            {"context": retriever | streamlit_llama3.format_docs, "question": RunnablePassthrough()}
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
+        response = rag_chain.invoke(query)
+        st.write(response)
