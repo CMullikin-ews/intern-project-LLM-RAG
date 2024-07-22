@@ -27,7 +27,7 @@ DB_FAISS_PATH = '../vectorstore'
 llm = Ollama(model='llama3')
 
 # Initialize document store
-document_store = FAISSDocumentStore(faiss_index_path="my_index.faiss", faiss_config_path="my_index.json")
+document_store = FAISSDocumentStore(faiss_index_path="../../cyber_data", faiss_config_path="../vectorstore")
 
 document_store = FAISSDocumentStore(
     faiss_index_path="../../cyber_data", 
