@@ -1,7 +1,9 @@
+import os
+import logging
 import streamlit as st
-import streamlit_whiterabbit
+import streamlit_llama3
 from langchain_community.document_loaders import WebBaseLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -11,17 +13,36 @@ from langchain.chains import LLMChain
 from langchain_community.llms import Ollama
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain.retrievers import BM25Retriever
-from langchain.pipelines import RAGPipeline
-from langchain import Document
+from langchain.schema import Document
+import random
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Location of the documents for the vector store and location of the vector store
+DATA_PATH = '../cyber_data'
+DB_FAISS_PATH = '../vectorstore'
 
 def get_file_types(directory):
-    streamlit_whiterabbit.get_file_types(directory)
+    streamlit_llama3.get_file_types(directory)
 
 def create_directory_loader(file_type, directory_path):
-    streamlit_whiterabbit.create_directory_loader(file_type, directory_path)
+    streamlit_llama3.create_directory_loader(file_type, directory_path)
+
+def create_document_loaders():
+    """Create and return document loaders for different sources."""
+    loaders = {
+        'web': WebBaseLoader,
+        'directory': DirectoryLoader,
+        'text': TextLoader,
+        'unstructured_file': UnstructuredFileLoader,
+        # Add other loaders as needed
+    }
+    return loaders
 
 def load_documents():
-    streamlit_whiterabbit.load_documents()
+    streamlit_llama3.load_documents()
 
 def process_input(urls, question):
     model_local = Ollama(model="mxbai-embed-large")
@@ -31,62 +52,55 @@ def process_input(urls, question):
     docs = [WebBaseLoader(url).load() for url in urls_list]
     docs_list = [item for sublist in docs for item in sublist]
 
-    text_splitter = streamlit_whiterabbit.RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=7500, chunk_overlap=100)
+    text_splitter = streamlit_llama3.RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=7500, chunk_overlap=100)
     doc_splits = text_splitter.split_documents(docs_list)
 
 def create_knowledgeBase():
-    streamlit_whiterabbit.create_knowledgeBase()
+    streamlit_llama3.create_knowledgeBase()
 
 def load_knowledgeBase():
-    streamlit_whiterabbit.load_knowledgeBase()
+    streamlit_llama3.load_knowledgeBase()
 
 def load_prompt():
-    streamlit_whiterabbit.load_prompt()
+    streamlit_llama3.load_prompt()
 
 def format_docs(docs):
-    streamlit_whiterabbit.format_docs()
+    streamlit_llama3.format_docs(docs)
 
-# Initialize Ollama LLM
 def load_llm():
-    """
-    Creates and returns WhiteRabbitNeo model
+    streamlit_llama3.load_llm()
 
-    Returns:
-        WhiteRabbitNeo: LLM
-        """
-    streamlit_whiterabbit.load_llm()
-    return Ollama()
+def generate_response(query):
+    streamlit_llama3.generate_response(query)
 
-# Initialize document store
-document_store = InMemoryDocstore()
+def get_relevant_url(query):
+    streamlit_llama3.get_relevant_url(query)
 
-# Add documents to the store (this is an example; replace with your documents)
-documents = [
-    Document({"content": "../cyber_data", "metadata": {"source": "Wikipedia"}}),
-    # Add more documents as needed
-]
-document_store.write_documents(documents)
+def respond_with_url(query):
+    streamlit_llama3.respond_with_url(query)
 
-# Initialize retriever
-retriever = BM25Retriever(document_store=document_store)
+if __name__ == '__main__':
+    st.header("Welcome to the 📝 PDF Bot")
+    st.write("🤖 You can chat by entering your queries")
 
-# Define a prompt template for RAG
-prompt_template = PromptTemplate(
-    template="Context: {context}\nQuestion: {question}\nAnswer:",
-    input_variables=["context", "question"]
-)
+    if not os.path.exists(DB_FAISS_PATH):
+        streamlit_llama3.create_knowledgeBase()
 
-# Create an LLM chain for RAG
-llm_chain = LLMChain(llm="Ollama", prompt_template=prompt_template)
+    knowledgeBase = streamlit_llama3.load_knowledgeBase()
+    llm = streamlit_llama3.load_llm()
+    prompt = streamlit_llama3.load_prompt()
 
-# Initialize RAG pipeline
-rag_pipeline = RAGPipeline(retriever=retriever, generator=llm_chain)
+    query = st.text_input('Enter some text')
 
-# Streamlit user interface
-st.title("Advanced RAG System with LangChain and Ollama")
-
-question = st.text_input("Enter your question:")
-if st.button("Get Answer"):
-    # Retrieve and generate answer using RAG pipeline
-    response = rag_pipeline({"question": question})
-    st.write("Answer:", response)
+    if query:
+        similar_embeddings = knowledgeBase.similarity_search(query)
+        documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
+        retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
+        rag_chain = (
+            {"context": retriever | format_docs, "question": RunnablePassthrough()}
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
+        response = rag_chain.invoke(query)
+        st.write(response)
