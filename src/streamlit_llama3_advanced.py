@@ -12,7 +12,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain.chains import LLMChain, RetrievalQA
 from langchain_community.llms import Ollama
-from haystack.document_stores import FAISSDocumentStore
+from haystack.document_stores.faiss import FAISSDocumentStore
 from haystack.nodes import DensePassageRetriever
 from haystack.utils import clean_wiki_text, convert_files_to_docs, fetch_archive_from_http
 from langchain.retrievers import BM25Retriever
@@ -38,7 +38,16 @@ documents = [
 document_store.write_documents(documents)
 
 # Initialize retriever
-retriever = BM25Retriever(document_store=document_store)
+retriever = DensePassageRetriever(
+    document_store=document_store,
+    query_embedding_model="facebook/dpr-question_encoder-single-nq-base",
+    passage_embedding_model="facebook/dpr-ctx_encoder-single-nq-base",
+    use_gpu=True,
+    embed_title=True
+)
+
+# Update embeddings for the documents in the store
+document_store.update_embeddings(retriever)
 class RAGPipeline:
     def __init__(self, llm, retriever):
         self.llm = llm
