@@ -1,7 +1,6 @@
 import os
 import logging
 import streamlit as st
-import streamlit_llama3
 import random
 from langchain_community.document_loaders import WebBaseLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
@@ -23,14 +22,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 llm = Ollama(model='llama3')
+
 class RAGPipeline:
     def __init__(self, llm, retriever):
         self.llm = llm
         self.retriever = retriever
 
     def generate(self, query):
-        # Implement your generation logic
-        return "Generated response"
+        documents = self.retriever.get_relevant_documents(query)
+        # Process documents with the LLM
+        response = self.llm.generate(query, documents)
+        return response
+    
 retriever = BM25Retriever()
 pipeline = RAGPipeline(llm=llm, retriever=retriever)
 
@@ -38,33 +41,31 @@ pipeline = RAGPipeline(llm=llm, retriever=retriever)
 DATA_PATH = '../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
 
-def get_file_types(directory):
-    streamlit_llama3.get_file_types(directory)
-
-def create_directory_loader(file_type, directory_path):
-    streamlit_llama3.create_directory_loader(file_type, directory_path)
-
 def create_document_loaders():
     """Create and return document loaders for different sources."""
     loaders = {
-    '.php': UnstructuredFileLoader,
-    '.cs': UnstructuredFileLoader,
-    '': UnstructuredFileLoader,
-    '.c': UnstructuredFileLoader,
-    '.html': UnstructuredHTMLLoader,
-    '.md': UnstructuredMarkdownLoader,
-    '.tzt': UnstructuredFileLoader,
-    '.java': UnstructuredFileLoader,
-    '.txt': TextLoader,
-    '.ps1': UnstructuredFileLoader,
-    '.delphi': UnstructuredFileLoader,
-    '.asm': UnstructuredFileLoader,
-    '.TXT': TextLoader
+        '.php': UnstructuredFileLoader,
+        '.cs': UnstructuredFileLoader,
+        '.c': UnstructuredFileLoader,
+        '.html': UnstructuredHTMLLoader,
+        '.md': UnstructuredMarkdownLoader,
+        '.tzt': UnstructuredFileLoader,
+        '.java': UnstructuredFileLoader,
+        '.txt': TextLoader,
+        '.ps1': UnstructuredFileLoader,
+        '.delphi': UnstructuredFileLoader,
+        '.asm': UnstructuredFileLoader,
+        '.TXT': TextLoader
     }
     return loaders
 
-def load_documents():
-    streamlit_llama3.load_documents()
+def load_documents(directory_path):
+    loaders = create_document_loaders()
+    documents = []
+    for ext, loader_cls in loaders.items():
+        loader = loader_cls(directory_path)
+        documents.extend(loader.load())
+    return documents
 
 def process_input(urls, question):
     model_local = Ollama(model="llama3")
@@ -74,23 +75,10 @@ def process_input(urls, question):
     docs = [WebBaseLoader(url).load() for url in urls_list]
     docs_list = [item for sublist in docs for item in sublist]
 
-    text_splitter = streamlit_llama3.RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=7500, chunk_overlap=100)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=7500, chunk_overlap=100)
     doc_splits = text_splitter.split_documents(docs_list)
 
-def create_knowledgeBase():
-    streamlit_llama3.create_knowledgeBase()
-
-def load_knowledgeBase():
-    streamlit_llama3.load_knowledgeBase()
-
-def load_prompt():
-    streamlit_llama3.load_prompt()
-
-def format_docs(docs):
-    streamlit_llama3.format_docs(docs)
-
-def load_llm():
-    streamlit_llama3.load_llm()
+    # Assuming further processing is needed for the doc_splits
 
 def generate_response(query: str) -> List[str]:
     # Simulate an LLM response
@@ -103,18 +91,7 @@ def generate_response(query: str) -> List[str]:
     response = random.choice(responses)
     return response
 
-def get_relevant_url(query: str) -> List[str]:
-    # Simulate getting a relevant URL
-    urls = [
-        "https://example.com/info1",
-        "https://example.com/info2",
-        "https://example.com/info3",
-        "https://example.com/info4"
-    ]
-    url = random.choice(urls)
-    return url
-
-def respond_with_url(query: str) -> List[str]:
+def respond_with_url(query: str) -> str:
     retrieved_docs = retriever.retrieve(query)
     sources = [doc.metadata['source'] for doc in retrieved_docs]
     
@@ -133,24 +110,27 @@ if __name__ == '__main__':
     st.write("🤖 You can chat by entering your queries")
 
     if not os.path.exists(DB_FAISS_PATH):
-        streamlit_llama3.create_knowledgeBase()
-
-    knowledgeBase = streamlit_llama3.load_knowledgeBase()
-    llm = streamlit_llama3.load_llm()
-    prompt = streamlit_llama3.load_prompt()
+        # Create knowledge base if it doesn't exist
+        documents = load_documents(DATA_PATH)
+        embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+        vectorstore = FAISS.from_documents(documents, embeddings)
+        vectorstore.save(DB_FAISS_PATH)
+    else:
+        vectorstore = FAISS.load(DB_FAISS_PATH)
 
     query = st.text_input('Enter some text')
 
     if query:
-        similar_embeddings = knowledgeBase.similarity_search(query)
+        similar_embeddings = vectorstore.similarity_search(query)
         documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
         retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
         rag_chain = (
-            {"context": retriever | format_docs, "question": RunnablePassthrough()}
-            | prompt
+            {"context": retriever, "question": RunnablePassthrough()}
+            | PromptTemplate(prompt="Your query: {question}\n\n{context}")
             | llm
             | StrOutputParser()
         )
         response = rag_chain.invoke(query)
         st.write(response)
+
 
