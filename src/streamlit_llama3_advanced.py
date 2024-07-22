@@ -30,8 +30,8 @@ llm = Ollama(model='llama3')
 document_store = FAISSDocumentStore(faiss_index_path="my_index.faiss", faiss_config_path="my_index.json")
 
 document_store = FAISSDocumentStore(
-    faiss_index_path="path/to/my_index.faiss", 
-    faiss_config_path="path/to/my_index.json"
+    faiss_index_path="../../cyber_data", 
+    faiss_config_path="../vectorstore"
 )
 
 # Add documents to the store (this is an example; replace with your documents)
