@@ -1,1 +1,0 @@
-Home > Latest > 4-Web Application Security Testing > 01-Information Gathering Fingerprint Web Application ID WSTG-INFO-09 This content has been merged into: Fingerprint Web Application Framework .

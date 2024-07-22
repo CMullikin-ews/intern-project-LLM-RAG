@@ -18,7 +18,7 @@ os.system("ollama pull mxbai-embed-large")
 os.system("ollama pull llama3")
 
 # Location of the documents for the vector store and location of the vector store
-DATA_PATH = '../cyber_data'
+DATA_PATH = '../../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
 
 # Specified loader for each type of file found in the cyber data directory (so far)
