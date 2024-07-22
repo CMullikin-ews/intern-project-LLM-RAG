@@ -158,7 +158,7 @@ def load_prompt():
             ChatPromptTemplate: Prompt for LLM
         """
         prompt = """
-        Imagine you are a knowledgeable and engaging teacher. Your task is to explain topic to a student in a clear and educational manner.
+        Image you are like Microsoft's Copilot AI, able to help junior software developers by clearly defining and going through the steps to help them detect and neutralize viruses and other threats
         Given below is the context and question of the user.
         context = {context}
         question = {question}
