@@ -12,7 +12,9 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain.chains import LLMChain, RetrievalQA
 from langchain_community.llms import Ollama
-from langchain_community.docstore.in_memory import InMemoryDocstore
+from haystack.document_stores import FAISSDocumentStore
+from haystack.nodes import DensePassageRetriever
+from haystack.utils import clean_wiki_text, convert_files_to_docs, fetch_archive_from_http
 from langchain.retrievers import BM25Retriever
 from langchain.schema import Document
 from sklearn.metrics.pairwise import cosine_similarity
@@ -26,7 +28,7 @@ DB_FAISS_PATH = '../vectorstore'
 llm = Ollama(model='llama3')
 
 # Initialize document store
-document_store = InMemoryDocstore()
+document_store = FAISSDocumentStore(faiss_index_path="my_index.faiss")
 
 # Add documents to the store (this is an example; replace with your documents)
 documents = [
