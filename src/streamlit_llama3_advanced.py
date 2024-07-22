@@ -26,14 +26,23 @@ DB_FAISS_PATH = '../vectorstore'
 llm = Ollama(model='llama3')
 
 # Initialize document store
+def load_documents():
+    streamlit_llama3.load_documents()
+
+def split_text(docs, max_length=512, chunk_overlap=50):
+    streamlit_llama3.split_text(docs, max_length=512, chunk_overlap=50)
+
+def create_knowledgeBase():
+    streamlit_llama3.create_knowledgeBase()
+    
 document_store = FAISS(
-    faiss_index_path="../../cyber_data", 
-    faiss_config_path="../vectorstore"
+    faiss_index_path=DATA_PATH, 
+    faiss_config_path=DB_FAISS_PATH
 )
 
 # Add documents to the store (this is an example; replace with your documents)
 documents = [
-    {"content": "Document content goes here", "meta": {"source": "Wikipedia"}},  # Update content as needed
+    {"content": DATA_PATH, "meta": {"source": "Wikipedia"}},  # Update content as needed
     # Add more documents as needed
 ]
 document_store.write_documents(documents)
