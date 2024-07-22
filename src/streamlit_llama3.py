@@ -158,10 +158,11 @@ def load_prompt():
             ChatPromptTemplate: Prompt for LLM
         """
         prompt = """
-        You are an assistant for helping software developers by clearly defining and going through the steps to detect and neutralize viruses.
-        Make sure to site the documents the data originates from used in constructing the response.
+        You are an assistant for helping software developers to detect and neutralize viruses.
+        Make sure to clearly define any necessary terms and go through the steps to use any application or software.
+        Cite the documents that the data provided comes from and any other sources used.
         If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
-         """
+        """
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
 
@@ -178,8 +179,14 @@ def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
 if __name__=='__main__':
+        # Downloads and runs ollama, as well as pulling our embedding model and LLM
+        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("sudo systemctl start ollama")
+        os.system("ollama pull jimscard/whiterabbit-neo")
+        os.system("ollama pull mxbai-embed-large")
+        
         # Creates header for streamlit app and writes to it
-        sl.header("Welcome to the 📝PDF bot")
+        sl.header("Welcome to the 📝Computer Virus copilot")
         sl.write("🤖 You can chat by entering your queries")
         
         # Creates and loads all of components for RAG system
