@@ -2,6 +2,7 @@ import os
 import logging
 import streamlit as st
 import streamlit_llama3
+import random
 from langchain_community.document_loaders import WebBaseLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -9,16 +10,22 @@ from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain.chains import LLMChain
+from langchain.chains import LLMChain, RetrievalQA
 from langchain_community.llms import Ollama
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain.retrievers import BM25Retriever
 from langchain.schema import Document
-import random
+from sklearn.metrics.pairwise import cosine_similarity
+from langchain_core.retrievers import BaseRetriever
+from langchain.chains.retrieval_qa import RetrievalQA
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+llm = Ollama(model='llama3')
+retriever = BaseRetriever()  # Initialize your custom retriever
+pipeline = RetrievalQA(llm=llm, retriever=retriever)
 
 # Location of the documents for the vector store and location of the vector store
 DATA_PATH = '../cyber_data'
@@ -33,11 +40,19 @@ def create_directory_loader(file_type, directory_path):
 def create_document_loaders():
     """Create and return document loaders for different sources."""
     loaders = {
-        'web': WebBaseLoader,
-        'directory': DirectoryLoader,
-        'text': TextLoader,
-        'unstructured_file': UnstructuredFileLoader,
-        # Add other loaders as needed
+    '.php': UnstructuredFileLoader,
+    '.cs': UnstructuredFileLoader,
+    '': UnstructuredFileLoader,
+    '.c': UnstructuredFileLoader,
+    '.html': UnstructuredHTMLLoader,
+    '.md': UnstructuredMarkdownLoader,
+    '.tzt': UnstructuredFileLoader,
+    '.java': UnstructuredFileLoader,
+    '.txt': TextLoader,
+    '.ps1': UnstructuredFileLoader,
+    '.delphi': UnstructuredFileLoader,
+    '.asm': UnstructuredFileLoader,
+    '.TXT': TextLoader
     }
     return loaders
 
