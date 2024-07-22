@@ -1,7 +1,6 @@
 import os
 import logging
 import streamlit as st
-import streamlit_llama3
 import random
 from langchain_community.document_loaders import WebBaseLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
@@ -19,7 +18,7 @@ from langchain.retrievers import BM25Retriever
 from langchain.schema import Document
 from sklearn.metrics.pairwise import cosine_similarity
 from typing import List
-
+import streamlit_llama3  # Fixed import position
 
 DATA_PATH = '../../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
@@ -32,7 +31,7 @@ document_store = FAISSDocumentStore(faiss_index_path="my_index.faiss")
 
 # Add documents to the store (this is an example; replace with your documents)
 documents = [
-    {"content": "../cyber_data", "metadata": {"source": "Wikipedia"}},
+    {"content": "../cyber_data", "meta": {"source": "Wikipedia"}},
     # Add more documents as needed
 ]
 document_store.write_documents(documents)
@@ -48,16 +47,18 @@ retriever = DensePassageRetriever(
 
 # Update embeddings for the documents in the store
 document_store.update_embeddings(retriever)
+
 class RAGPipeline:
     def __init__(self, llm, retriever):
         self.llm = llm
         self.retriever = retriever
 
     def generate(self, query):
-        documents = self.retriever.get_relevant_documents(query)
+        documents = self.retriever.retrieve(query)
         # Process documents with the LLM
         response = self.llm.generate(query, documents)
         return response
+
 pipeline = RAGPipeline(llm=llm, retriever=retriever)
 
 # Define a prompt template for RAG
