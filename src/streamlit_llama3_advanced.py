@@ -38,12 +38,6 @@ pipeline = RAGPipeline(llm=llm, retriever=BM25Retriever(docs=InMemoryDocstore())
 DATA_PATH = '../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
 
-def get_file_types(directory):
-    streamlit_llama3.get_file_types(directory)
-
-def create_directory_loader(file_type, directory_path):
-    streamlit_llama3.create_directory_loader(file_type, directory_path)
-
 def create_document_loaders():
     """Create and return document loaders for different sources."""
     loaders = {
@@ -63,9 +57,6 @@ def create_document_loaders():
     }
     return loaders
 
-def load_documents():
-    streamlit_llama3.load_documents()
-
 def process_input(urls, question):
     model_local = Ollama(model="llama3")
     
@@ -77,20 +68,8 @@ def process_input(urls, question):
     text_splitter = streamlit_llama3.RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=7500, chunk_overlap=100)
     doc_splits = text_splitter.split_documents(docs_list)
 
-def create_knowledgeBase():
-    streamlit_llama3.create_knowledgeBase()
-
-def load_knowledgeBase():
-    streamlit_llama3.load_knowledgeBase()
-
-def load_prompt():
-    streamlit_llama3.load_prompt()
-
 def format_docs(docs):
     streamlit_llama3.format_docs(docs)
-
-def load_llm():
-    streamlit_llama3.load_llm()
 
 def generate_response(query: str) -> List[str]:
     # Simulate an LLM response
