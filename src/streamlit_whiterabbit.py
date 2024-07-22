@@ -158,7 +158,7 @@ def load_prompt():
             ChatPromptTemplate: Prompt for LLM
         """
         prompt = """
-        Image you are like Microsoft's Copilot AI, able to help software developers by clearly defining and going through the steps to help them detect and neutralize viruses and other threats.
+        Image you are a copilot for helping software developers by clearly defining and going through the steps to help them detect and neutralize viruses and other threats
         Make sure to site the sources of the files used in constructing the response
         If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
          """
