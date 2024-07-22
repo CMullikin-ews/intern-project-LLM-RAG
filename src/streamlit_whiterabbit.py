@@ -152,9 +152,9 @@ def load_prompt():
         """
         prompt = """
         You are an assistant for helping software developers by clearly defining and going through the steps to detect and neutralize viruses.
-        Site the documents that the data provided comes from and any other sources used
+        Cite the documents that the data provided comes from and any other sources used
         If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
-         """
+        """
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
 
@@ -173,7 +173,7 @@ def format_docs(docs):
 if __name__=='__main__':
         # Downloads and runs ollama, as well as pulling our embedding model and LLM
         os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("export OLLAMA_HOST=127.0.0.1:33020 ollama list")
         os.system("sudo service ollama stop")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
