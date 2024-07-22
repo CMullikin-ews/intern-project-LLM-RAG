@@ -177,7 +177,7 @@ if __name__=='__main__':
         # os.system("curl -fsSL https://ollama.com/install.sh | sh")
         # os.system("export OLLAMA_HOST=0.0.0.0")
         # os.system("sudo service ollama stop")
-        # os.system("ollama serve")
+        os.system("ollama serve")
         # os.system("ollama pull mxbai-embed-large")
         # os.system("ollama run mxbai-embed-large")
         # os.system("ollama run jimscard/whiterabbit-neo")
