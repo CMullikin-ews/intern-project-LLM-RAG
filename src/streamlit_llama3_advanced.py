@@ -29,6 +29,11 @@ llm = Ollama(model='llama3')
 # Initialize document store
 document_store = FAISSDocumentStore(faiss_index_path="my_index.faiss", faiss_config_path="my_index.json")
 
+document_store = FAISSDocumentStore(
+    faiss_index_path="path/to/my_index.faiss", 
+    faiss_config_path="path/to/my_index.json"
+)
+
 # Add documents to the store (this is an example; replace with your documents)
 documents = [
     {"content": "../cyber_data", "meta": {"source": "Wikipedia"}},
