@@ -18,7 +18,13 @@ from typing import List
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Initialize LLM
 llm = Ollama(model='llama3')
+
+# Initialize in-memory docstore with empty dictionary
+docstore = InMemoryDocstore(docs={})
+
+# Define the RAG pipeline
 class RAGPipeline:
     def __init__(self, llm, retriever):
         self.llm = llm
@@ -31,8 +37,7 @@ class RAGPipeline:
         response = self.llm.generate(query, documents)
         return response
 
-pipeline = RAGPipeline(llm=llm, retriever=BM25Retriever(docs=InMemoryDocstore()))
-
+pipeline = RAGPipeline(llm=llm, retriever=BM25Retriever(docs=docstore))
 
 # Location of the documents for the vector store and location of the vector store
 DATA_PATH = '../cyber_data'
@@ -41,19 +46,17 @@ DB_FAISS_PATH = '../vectorstore'
 def create_document_loaders():
     """Create and return document loaders for different sources."""
     loaders = {
-    '.php': UnstructuredFileLoader,
-    '.cs': UnstructuredFileLoader,
-    '': UnstructuredFileLoader,
-    '.c': UnstructuredFileLoader,
-    '.html': UnstructuredHTMLLoader,
-    '.md': UnstructuredMarkdownLoader,
-    '.tzt': UnstructuredFileLoader,
-    '.java': UnstructuredFileLoader,
-    '.txt': TextLoader,
-    '.ps1': UnstructuredFileLoader,
-    '.delphi': UnstructuredFileLoader,
-    '.asm': UnstructuredFileLoader,
-    '.TXT': TextLoader
+        '.php': UnstructuredFileLoader,
+        '.cs': UnstructuredFileLoader,
+        '': UnstructuredFileLoader,
+        '.c': UnstructuredFileLoader,
+        '.html': UnstructuredHTMLLoader,
+        '.md': UnstructuredMarkdownLoader,
+        '.txt': TextLoader,
+        '.ps1': UnstructuredFileLoader,
+        '.delphi': UnstructuredFileLoader,
+        '.asm': UnstructuredFileLoader,
+        '.TXT': TextLoader
     }
     return loaders
 
@@ -103,17 +106,20 @@ def respond_with_url(query: str) -> List[str]:
     
     return response_with_citations
 
-
 if __name__ == '__main__':
     st.header("Welcome to the 📝 PDF Bot")
     st.write("🤖 You can chat by entering your queries")
 
     if not os.path.exists(DB_FAISS_PATH):
-        streamlit_llama3.create_knowledgeBase()
+        st.warning("Vector store not found. Create it first.")
 
-    knowledgeBase = streamlit_llama3.load_knowledgeBase()
-    llm = streamlit_llama3.load_llm()
-    prompt = streamlit_llama3.load_prompt()
+    # Assuming the following functions exist in streamlit_llama3
+    try:
+        knowledgeBase = streamlit_llama3.load_knowledgeBase()
+        llm = streamlit_llama3.load_llm()
+        prompt = streamlit_llama3.load_prompt()
+    except AttributeError:
+        st.error("Failed to load knowledge base or LLM components.")
 
     query = st.text_input('Enter some text')
 
