@@ -179,7 +179,7 @@ if __name__=='__main__':
         os.system("ollama pull mxbai-embed-large")
         
         # Creates header for streamlit app and writes to it
-        sl.header("Welcome to the 📝PDF bot")
+        sl.header("Welcome to the 📝Computer Virus copilot")
         sl.write("🤖 You can chat by entering your queries")
         
         # Creates and loads all of components for RAG system
