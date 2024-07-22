@@ -197,7 +197,7 @@ if __name__=='__main__':
                 similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
                 
                 # Defines chain together query, documents, prompt, and LLM to form process for generating response
-                retriever = similar_embeddings.as_retriever()f
+                retriever = similar_embeddings.as_retriever()
                 rag_chain = (
                         {"context": retriever | format_docs, "question": RunnablePassthrough()}
                         | prompt
