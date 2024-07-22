@@ -124,14 +124,14 @@ if __name__ == '__main__':
     query = st.text_input('Enter some text')
 
     if query:
-        similar_embeddings = knowledgeBase.similarity_search(query)
-        documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
-        retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
-        rag_chain = (
-            {"context": retriever | streamlit_llama3.format_docs, "question": RunnablePassthrough()}
-            | prompt
-            | llm
-            | StrOutputParser()
-        )
-        response = rag_chain.invoke(query)
-        st.write(response)
+            similar_embeddings = knowledgeBase.similarity_search(query)
+            documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
+            retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
+            rag_chain = (
+                {"context": retriever | streamlit_llama3.format_docs, "question": RunnablePassthrough()}
+                | prompt
+                | llm
+                | StrOutputParser()
+            )
+            response = rag_chain.invoke(query)
+            st.write(response)
