@@ -16,11 +16,15 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain.retrievers import BM25Retriever
 from langchain.schema import Document
 from sklearn.metrics.pairwise import cosine_similarity
-from langchain_core.retrievers import BaseRetriever
+from langchain_core.retrievers import CustomRetriever
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+llm = Ollama(model='llama3')
+retriever = CustomRetriever()  # Initialize your custom retriever
+pipeline = RAGPipeline(llm=llm, retriever=retriever)
 
 # Location of the documents for the vector store and location of the vector store
 DATA_PATH = '../cyber_data'
@@ -81,13 +85,40 @@ def load_llm():
     streamlit_llama3.load_llm()
 
 def generate_response(query):
-    streamlit_llama3.generate_response(query)
+    # Simulate an LLM response
+    responses = [
+        "Sure, I can help with that!",
+        "Let me find that information for you.",
+        "Here is what I found.",
+        "This is the information you requested."
+    ]
+    response = random.choice(responses)
+    return response
 
 def get_relevant_url(query):
-    streamlit_llama3.get_relevant_url(query)
+    # Simulate getting a relevant URL
+    urls = [
+        "https://example.com/info1",
+        "https://example.com/info2",
+        "https://example.com/info3",
+        "https://example.com/info4"
+    ]
+    url = random.choice(urls)
+    return url
 
 def respond_with_url(query):
-    streamlit_llama3.respond_with_url(query)
+    retrieved_docs = retriever.retrieve(query)
+    sources = [doc.metadata['source'] for doc in retrieved_docs]
+    
+    # Generate a response
+    response = pipeline.generate(query)
+    
+    # Append citations to the response
+    citation_text = "Sources: " + ", ".join(sources)
+    response_with_citations = f"{response}\n\n{citation_text}"
+    
+    return response_with_citations
+
 
 if __name__ == '__main__':
     st.header("Welcome to the 📝 PDF Bot")
