@@ -1,20 +1,14 @@
 import streamlit as st
-from langchain import LangChain
+import streamlit_llama3
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from ollama import Ollama
-from langchain.document_store import InMemoryDocumentStore
+from langchain.document_stores import InMemoryDocumentStore
 from langchain.retrievers import BM25Retriever
-from langchain.pipeline import RAGPipeline
-
-# Initialize LangChain
-lc = LangChain()
+from langchain.pipelines import RAGPipeline
 
 # Initialize Ollama LLM
 ollama_llm = Ollama(api_key='YOUR_API_KEY')
-
-# Register the LLM with LangChain
-lc.register_llm(ollama_llm)
 
 # Initialize document store
 document_store = InMemoryDocumentStore()
@@ -36,7 +30,7 @@ prompt_template = PromptTemplate(
 )
 
 # Create an LLM chain for RAG
-llm_chain = LLMChain(llm=ollama_llm, prompt_template=prompt_template)
+llm_chain = LLMChain(llm=ollama_llm, prompt=prompt_template)
 
 # Initialize RAG pipeline
 rag_pipeline = RAGPipeline(retriever=retriever, generator=llm_chain)
