@@ -34,6 +34,12 @@ def split_text(docs, max_length=512, chunk_overlap=50):
 
 def create_knowledgeBase():
     streamlit_llama3.create_knowledgeBase()
+
+def load_prompt():
+    streamlit_llama3.load_prompt()
+
+def format_docs(docs):
+    streamlit_llama3.format_docs(docs)
     
 document_store = FAISS(
     faiss_index_path=DATA_PATH, 
