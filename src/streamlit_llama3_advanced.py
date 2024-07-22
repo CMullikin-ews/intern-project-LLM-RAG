@@ -27,7 +27,7 @@ DB_FAISS_PATH = '../vectorstore'
 llm = Ollama(model='llama3')
 
 # Initialize document store
-document_store = FAISSDocumentStore(faiss_index_path="my_index.faiss")
+document_store = FAISSDocumentStore(faiss_index_path="my_index.faiss", faiss_config_path="my_index.json")
 
 # Add documents to the store (this is an example; replace with your documents)
 documents = [
