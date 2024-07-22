@@ -17,15 +17,10 @@ from langchain.retrievers import BM25Retriever
 from langchain.schema import Document
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain_core.retrievers import BaseRetriever
-from langchain.chains.retrieval_qa import RetrievalQA
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-llm = Ollama(model='llama3')
-retriever = BaseRetriever()  # Initialize your custom retriever
-pipeline = RetrievalQA(llm=llm, retriever=retriever)
 
 # Location of the documents for the vector store and location of the vector store
 DATA_PATH = '../cyber_data'
@@ -60,7 +55,7 @@ def load_documents():
     streamlit_llama3.load_documents()
 
 def process_input(urls, question):
-    model_local = Ollama(model="mxbai-embed-large")
+    model_local = Ollama(model="llama3")
     
     # Convert string of URLs to list
     urls_list = urls.split("\n")
