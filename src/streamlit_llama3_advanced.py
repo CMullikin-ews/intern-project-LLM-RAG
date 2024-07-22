@@ -1,22 +1,13 @@
 import os
-import logging
 import streamlit as st
-from langchain_community.document_loaders import WebBaseLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
-from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain.chains import LLMChain, RetrievalQA
 from langchain_community.llms import Ollama
-from haystack.document_stores.faiss import FAISSDocumentStore
 from haystack.nodes import DensePassageRetriever
-from haystack.utils import clean_wiki_text, convert_files_to_docs, fetch_archive_from_http
-from langchain.retrievers import BM25Retriever
 from langchain.schema import Document
-from sklearn.metrics.pairwise import cosine_similarity
-from typing import List
 import streamlit_llama3  # Fixed import position
 
 DATA_PATH = '../../cyber_data'
