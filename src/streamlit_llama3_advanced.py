@@ -1,13 +1,23 @@
 import os
+import logging
 import streamlit as st
+import random
+from langchain_community.document_loaders import WebBaseLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
+from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
+from langchain.chains import LLMChain, RetrievalQA
 from langchain_community.llms import Ollama
+from haystack.document_stores.faiss import FAISSDocumentStore
 from haystack.nodes import DensePassageRetriever
+from haystack.utils import clean_wiki_text, convert_files_to_docs, fetch_archive_from_http
+from langchain.retrievers import BM25Retriever
 from langchain.schema import Document
+from sklearn.metrics.pairwise import cosine_similarity
+from typing import List
 import streamlit_llama3  # Fixed import position
 
 DATA_PATH = '../../cyber_data'
@@ -17,29 +27,14 @@ DB_FAISS_PATH = '../vectorstore'
 llm = Ollama(model='llama3')
 
 # Initialize document store
-def load_documents():
-    streamlit_llama3.load_documents()
-
-def split_text(docs, max_length=512, chunk_overlap=50):
-    streamlit_llama3.split_text(docs, max_length=512, chunk_overlap=50)
-
-def create_knowledgeBase():
-    streamlit_llama3.create_knowledgeBase()
-
-def load_prompt():
-    streamlit_llama3.load_prompt()
-
-def format_docs(docs):
-    streamlit_llama3.format_docs(docs)
-    
 document_store = FAISS(
-    faiss_index_path=DATA_PATH, 
-    faiss_config_path=DB_FAISS_PATH
+    faiss_index_path="../../cyber_data", 
+    faiss_config_path="../vectorstore"
 )
 
 # Add documents to the store (this is an example; replace with your documents)
 documents = [
-    {"content": DATA_PATH, "meta": {"source": "Wikipedia"}},  # Update content as needed
+    Document(page_content="../cyber_data", metadata={"source": "Wikipedia"}),
     # Add more documents as needed
 ]
 document_store.write_documents(documents)
