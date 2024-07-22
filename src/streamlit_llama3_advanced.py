@@ -68,9 +68,6 @@ def process_input(urls, question):
     text_splitter = streamlit_llama3.RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=7500, chunk_overlap=100)
     doc_splits = text_splitter.split_documents(docs_list)
 
-def format_docs(docs):
-    streamlit_llama3.format_docs(docs)
-
 def generate_response(query: str) -> List[str]:
     # Simulate an LLM response
     responses = [
@@ -125,7 +122,7 @@ if __name__ == '__main__':
         documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
         retriever = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)).as_retriever()
         rag_chain = (
-            {"context": retriever | format_docs, "question": RunnablePassthrough()}
+            {"context": retriever | streamlit_llama3.format_docs, "question": RunnablePassthrough()}
             | prompt
             | llm
             | StrOutputParser()
