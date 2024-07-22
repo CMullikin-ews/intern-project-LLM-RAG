@@ -174,8 +174,9 @@ def format_docs(docs):
 if __name__=='__main__':
         # Downloads and runs ollama, as well as pulling our embedding model and LLM
         # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("sudo systemctl start ollama")
-        os.system("ollama pull jimscard/whiterabbit-neo")
+        from subprocess import Popen
+        os.system("sudo service ollama stop")
+        p = Popen([os.system("ollama serve")])
         os.system("ollama pull mxbai-embed-large")
         
         # Creates header for streamlit app and writes to it
