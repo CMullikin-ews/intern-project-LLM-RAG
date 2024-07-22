@@ -13,7 +13,6 @@ import os
 # Downloads and runs ollama, as well as pulling our embedding model and LLM
 os.system("curl -fsSL https://ollama.com/install.sh | sh")
 os.system("export OLLAMA_HOST=localhost:8888")
-# os.system("sudo pkill ollama")
 os.system("ollama serve")
 os.system("ollama pull mxbai-embed-large")
 os.system("ollama pull llama3")
