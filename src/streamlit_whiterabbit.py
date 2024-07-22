@@ -10,14 +10,6 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 import os
 
-# Downloads and runs ollama, as well as pulling our embedding model and LLM
-os.system("curl -fsSL https://ollama.com/install.sh | sh")
-os.system("export OLLAMA_HOST=localhost:8888")
-os.system("sudo service ollama stop")
-os.system("ollama serve")
-os.system("ollama pull mxbai-embed-large")
-os.system("ollama pull jimscard/whiterabbit-neo")
-
 # Location of the documents for the vector store and location of the vector store
 DATA_PATH = '../../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
@@ -160,7 +152,7 @@ def load_prompt():
         """
         prompt = """
         You are an assistant for helping software developers by clearly defining and going through the steps to detect and neutralize viruses.
-        Make sure to site the documents the data originates from used in constructing the response.
+        Site the documents that the data provided comes from and any other sources used
         If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
          """
         prompt = ChatPromptTemplate.from_template(prompt)
@@ -179,6 +171,14 @@ def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
 if __name__=='__main__':
+        # Downloads and runs ollama, as well as pulling our embedding model and LLM
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("sudo service ollama stop")
+        os.system("ollama serve")
+        os.system("ollama pull mxbai-embed-large")
+        os.system("ollama pull jimscard/whiterabbit-neo")
+        
         # Creates header for streamlit app and writes to it
         sl.header("Welcome to the 📝PDF bot")
         sl.write("🤖 You can chat by entering your queries")
