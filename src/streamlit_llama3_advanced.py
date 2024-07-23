@@ -127,11 +127,9 @@ def create_knowledgeBase():
     vectorstore.save_local(DB_FAISS_PATH)
 
 def load_knowledgeBase():
-    docs = load_documents()
-    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-    vector_store = FAISS.from_documents(docs, embeddings)
-    vector_store.save_local(DB_FAISS_PATH)
-    return vector_store
+    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+    return db
 
 def load_llm():
     return Ollama(model="llama3")
@@ -180,12 +178,12 @@ if __name__ == '__main__':
     sl.write("🤖 You can chat by entering your queries")
     
     try:
-        knowledge_base = load_knowledgeBase()
-        llm = load_llm()
-        prompt = load_prompt()
+        knowledge_base = streamlit_llama3.load_knowledgeBase()
+        llm = streamlit_llama3.load_llm()
+        prompt = streamlit_llama3.load_prompt()
         logging.info("Components loaded successfully.")
     except Exception as e:
-        logging.error(f"Errod loading components: {e}")
+        logging.error(f"Error loading components: {e}")
         sl.write("An error occurred while loading the components. Please check the logs.")
 
     query = sl.text_input('Enter some text')
