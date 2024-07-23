@@ -179,9 +179,8 @@ if __name__=='__main__':
         # os.system("sudo service ollama stop")
         # os.system("sudo systemctl start ollama")
         # os.system("ollama serve")
-        # os.system("ollama pull mxbai-embed-large")
-        # os.system("ollama run mxbai-embed-large")
-        # os.system("ollama run jimscard/whiterabbit-neo")
+        os.system("ollama pull mxbai-embed-large")
+        os.system("ollama pull jimscard/whiterabbit-neo")
         
         # Creates header for streamlit app and writes to it
         sl.header("Welcome to the 📝Computer Virus copilot")
