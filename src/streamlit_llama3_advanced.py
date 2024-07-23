@@ -1,13 +1,20 @@
 import streamlit as sl
 import streamlit_llama3
-from langchain_community.document_loaders import DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
+from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
+from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.llms import Ollama
+from langchain.schema import Document
 import os
 import logging
+import random
 import textract
+import re
+import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -20,7 +27,7 @@ DB_FAISS_PATH = '../vectorstore'
 loaders = {
     '.php': UnstructuredFileLoader,
     '.cs': UnstructuredFileLoader,
-    '.': UnstructuredFileLoader,
+    '': UnstructuredFileLoader,
     '.c': UnstructuredFileLoader,
     '.html': UnstructuredHTMLLoader,
     '.md': UnstructuredMarkdownLoader,
@@ -37,9 +44,9 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     try:
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8888")
-        os.system("sudo service ollama stop")
+        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        # os.system("export OLLAMA_HOST=localhost:8888")
+        # os.system("sudo service ollama stop")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
@@ -49,60 +56,151 @@ def setup_ollama():
 
 def get_file_types(directory):
     file_types = set()
-
-    if not os.path.exists(directory):
-        raise FileNotFoundError(f"Directory '{directory}' does not exist.")
-    
     for filename in os.listdir(directory):
         if os.path.isfile(os.path.join(directory, filename)):
             _, ext = os.path.splitext(filename)
             file_types.add(ext)
-    
     return file_types
 
-try:
+def create_directory_loader(file_type, directory_path):
+    """
+    Creates and returns a DirectoryLoader using the loader specific to the file type provided
+    
+    Args:
+        file_type (str): Type of file to make loader for
+        directory_path (str): Path to directory
+
+    Returns:
+        DirectoryLoader: loader for the files in the directory provided
+    """
+    if file_type == '.json':
+        loader_list = []
+        for file_name in [file for file in os.listdir(directory_path) if file.endswith('.json')]:
+            loader_list.append(JSONLoader(file_path=os.path.join(directory_path, file_name), jq_schema='.', text_content=False))
+        return loader_list
+    else:
+        return DirectoryLoader(
+            path=directory_path,
+            glob=f"**/*{file_type}",
+            loader_cls=loaders.get(file_type, UnstructuredFileLoader))
+
+def load_documents():
     file_types = get_file_types(DATA_PATH)
     documents = []
-
+    
     for file_type in file_types:
-        print(f"Found file type: {file_type}")
-except FileNotFoundError as e:
-    print(e)
+        if file_type.strip() != "":
+            if file_type == '.json':
+                loader_list = create_directory_loader(file_type, DATA_PATH)
+                for loader in loader_list:
+                    docs = loader.load()
+                    chunks = split_text(docs)
+                    if chunks:
+                        documents.extend(chunks)
+            else:
+                loader = create_directory_loader(file_type, DATA_PATH)
+                docs = loader.load()
+                chunks = split_text(docs)
+                if chunks:
+                    documents.extend(chunks)
+    return documents
+
+def split_text(docs, max_length=512, chunk_overlap=50):
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=max_length,
+        chunk_overlap=chunk_overlap
+    )
+    return splitter.split_documents(docs)
+
+def create_knowledgeBase():
+    docs = load_documents()
+    chunks = split_text(docs)
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    documents = [Document(page_content=chunk) for chunk in chunks]
+    vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
+    vectorstore.save_local(DB_FAISS_PATH)
+
+def load_knowledgeBase():
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+    return db
+
+def load_llm():
+    return Ollama(model="llama3")
+
+def load_prompt():
+    prompt = """
+    You are an assistant for helping software developers to detect and neutralize viruses.
+    Make sure to clearly define any necessary terms and go through the steps to use any application or software.
+    Only use the data provided to you.
+    Cite the sources used in constructing the response.
+    If the answer is not in the data provided, answer "Sorry, I'm not sure how to respond to this"
+    """
+    return ChatPromptTemplate.from_template(prompt)
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+def generate_response(query: str) -> str:
+    responses = [
+        "Sure, I can help with that!",
+        "Let me find that information for you.",
+        "Here is what I found.",
+        "This is the information you requested."
+    ]
+    return random.choice(responses)
+
+def get_relevant_url(query: str) -> str:
+    urls = [
+        "https://example.com/info1",
+        "https://example.com/info2",
+        "https://example.com/info3",
+        "https://example.com/info4"
+    ]
+    return random.choice(urls)
+
+def respond_with_url(query: str) -> str:
+    # This function should be updated as per your logic to retrieve documents
+    # As it stands, it assumes `retriever` is a global variable
+    retrieved_docs = retriever.retrieve(query)
+    sources = [doc.metadata['source'] for doc in retrieved_docs]
+    response = generate_response(query)
+    citation_text = "Sources: " + ", ".join(sources)
+    return f"{response}\n\n{citation_text}"
 
 def extract_text(file_path):
+    """Extract text from the document using textract."""
     try:
         text = textract.process(file_path).decode('utf-8')
         return text
     except Exception as e:
-        logging.error(f"Error extracting text from {file_path}: {e}")
+        print(f"Error extracting text from {file_path}: {e}")
         return None
 
 def extract_metadata(text):
-    word_tokens = word_tokenize(text)
-    filtered_words = [word for word in word_tokens if word.lower() not in stopwords.words('english')]
-    word_counts = Counter(filtered_words)
-    metadata = {
-        'total_words': len(word_tokens),
-        'unique_words': len(set(filtered_words)),
-        'word_counts': word_counts
-    }
+    """Extract metadata from the text."""
+    metadata = {}
+    
+    # Extract title (assuming the title is the first line)
+    lines = text.split('\n')
+    metadata['title'] = lines[0] if lines else 'Unknown Title'
+    
+    # Extract author (assuming author is mentioned in the second line)
+    metadata['author'] = lines[1] if len(lines) > 1 else 'Unknown Author'
+    
+    # Extract date (assuming date is mentioned in the third line in a known format)
+    date_line = lines[2] if len(lines) > 2 else ''
+    date_match = re.search(r'\b\d{4}-\d{2}-\d{2}\b', date_line)
+    metadata['date'] = date_match.group(0) if date_match else 'Unknown Date'
+    
+    # Extract keywords (most common non-stopwords)
+    stop_words = set(stopwords.words('english'))
+    words = word_tokenize(text)
+    words = [word.lower() for word in words if word.isalnum() and word.lower() not in stop_words]
+    keywords = [word for word, freq in Counter(words).most_common(10)]
+    metadata['keywords'] = keywords
+    
     return metadata
-
-def process_document(file_path):
-    text = extract_text(file_path)
-    if text:
-        metadata = extract_metadata(text)
-        print(metadata)
-        return metadata
-    return {}
-
-def load_and_process_documents(directory_path):
-    loader = DirectoryLoader(directory_path, loader_cls=TextLoader)
-    documents = loader.load()
-    for doc in documents:
-        file_path = doc['source']
-        metadata = process_document(file_path)
-        # Store or use the metadata as needed
 
 if __name__ == '__main__':
     setup_ollama()
@@ -123,13 +221,11 @@ if __name__ == '__main__':
     if query:
         try:
             similar_embeddings = knowledge_base.similarity_search(query)
-            similar_embeddings = FAISS.from_documents(
-                documents=similar_embeddings,
-                embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-            )
+            similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+            
             retriever = similar_embeddings.as_retriever()
             rag_chain = (
-                {"context": retriever | streamlit_llama3.format_docs, "question": RunnablePassthrough()}
+                {"context": retriever | format_docs, "question": RunnablePassthrough()}
                 | prompt
                 | llm
                 | StrOutputParser()
@@ -139,5 +235,6 @@ if __name__ == '__main__':
         except Exception as e:
             logging.error(f"Error processing query: {e}")
             sl.write("An error occurred while processing your query. Please check the logs.")
+
 
 
