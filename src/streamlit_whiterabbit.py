@@ -174,7 +174,7 @@ def format_docs(docs):
 if __name__=='__main__':
         # Downloads and runs ollama, as well as pulling our embedding model and LLM
         # os.system("sudo rm -rf /usr/local/bin/ollama")
-        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
         # os.system("export OLLAMA_HOST=0.0.0.0")
         # os.system("sudo service ollama stop")
         # os.system("sudo systemctl start ollama")
