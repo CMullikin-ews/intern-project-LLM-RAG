@@ -1,5 +1,5 @@
 import streamlit as sl
-from langchain_community.document_loaders import DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
@@ -7,6 +7,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
+from langchain.schema import Document
 import os
 import logging
 
@@ -45,6 +46,21 @@ loaders = {
     '.TXT': TextLoader
 }
 
+def load_documents():
+    loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
+    docs = loader.load()
+    return docs
+
+def split_text(docs, max_length=512, chunk_overlap=50):
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=max_length,
+        chunk_overlap=chunk_overlap
+    )
+    chunks = []
+    for doc in docs:
+        chunks.extend(splitter.split_text(doc.page_content))
+    return chunks
+
 # Function to get file types
 def get_file_types(directory):
     file_types = set()
@@ -53,6 +69,14 @@ def get_file_types(directory):
             file_type = os.path.splitext(file)[1]
             file_types.add(file_type)
     return file_types
+
+def create_knowledgeBase():
+    docs = load_documents()
+    chunks = split_text(docs)
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    documents = [Document(page_content=chunk) for chunk in chunks]
+    vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
+    vectorstore.save_local(DB_FAISS_PATH)
 
 # Load knowledge base
 def load_knowledgeBase():
