@@ -176,6 +176,8 @@ if __name__=='__main__':
         # os.system("curl -fsSL https://ollama.com/install.sh | sh")
         # os.system("sudo service ollama stop")
         # os.system("ollama serve")
+        import subprocess
+        subprocess.call(['gnome-terminal', '-x', 'ollama serve'])
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
         
