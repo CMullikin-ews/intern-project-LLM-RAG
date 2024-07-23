@@ -203,6 +203,7 @@ if __name__ == '__main__':
     sl.write("🤖 You can chat by entering your queries")
     
     try:
+        vectors = load_vectors(index_file_path)
         knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
@@ -215,7 +216,6 @@ if __name__ == '__main__':
     
     if query:
         try:
-            vectors = load_vectors(index_file_path)
             similar_embeddings = knowledge_base.similarity_search(query)
             similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             
