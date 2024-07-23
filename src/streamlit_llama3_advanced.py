@@ -37,9 +37,6 @@ loaders = {
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 
-# Set environment variables for Ollama
-# os.environ["OLLAMA_HOST"] = "localhost:8501"
-
 def setup_ollama():
     try:
         # os.system("curl -fsSL https://ollama.com/install.sh | sh")
@@ -183,12 +180,12 @@ if __name__ == '__main__':
     sl.write("🤖 You can chat by entering your queries")
     
     try:
-        knowledge_base = streamlit_llama3.load_knowledgeBase()
-        llm = streamlit_llama3.load_llm()
-        prompt = streamlit_llama3.load_prompt()
+        knowledge_base = load_knowledgeBase()
+        llm = load_llm()
+        prompt = load_prompt()
         logging.info("Components loaded successfully.")
     except Exception as e:
-        logging.error(f"Error loading components: {e}")
+        logging.error(f"Errod loading components: {e}")
         sl.write("An error occurred while loading the components. Please check the logs.")
 
     query = sl.text_input('Enter some text')
