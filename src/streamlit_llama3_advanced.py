@@ -1,4 +1,5 @@
 import streamlit as sl
+import streamlit_llama3
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -49,10 +50,11 @@ loaders = {
 # Function to get file types
 def get_file_types(directory):
     file_types = set()
-    for root, _, files in os.walk(directory):
-        for file in files:
-            file_type = os.path.splitext(file)[1]
-            file_types.add(file_type)
+
+    for filename in os.listdir(directory):
+            if os.path.isfile(os.path.join(directory, filename)):
+                    _, ext = os.path.splitext(filename)
+                    file_types.add(ext)
     return file_types
 
 def create_directory_loader(file_type, directory_path):
@@ -143,7 +145,7 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 if __name__ == '__main__':
-    # setup_ollama()
+    setup_ollama()
     
     # Creates header for Streamlit app and writes to it
     sl.header("Welcome to the 📝PDF bot")
@@ -164,7 +166,7 @@ if __name__ == '__main__':
     
     if query:
         try:
-            similar_embeddings = knowledge_base.similarity_search(query)
+            similar_embeddings = streamlit_llama3.knowledge_base.similarity_search(query)
             similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             
             # Define the chain for generating response
