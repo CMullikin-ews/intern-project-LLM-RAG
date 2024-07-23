@@ -1,4 +1,4 @@
-from sklearn import pipeline
+from sklearn.pipeline import Pipeline
 import streamlit as sl
 import streamlit_llama3
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
@@ -166,7 +166,7 @@ def respond_with_url(query: str) -> List[str]:
 
 def load_vectors(index_file_path):
     try:
-        index = FAISS.read_index(index_file_path)
+        index = FAISS.load_local(index_file_path)
         vectors = index.reconstruct_n(0, index.ntotal)
         logger.info(f"Loaded {index.ntotal} vectors from the vector store.")
         return vectors
