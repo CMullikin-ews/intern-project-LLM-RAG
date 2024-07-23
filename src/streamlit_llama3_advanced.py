@@ -167,8 +167,8 @@ def respond_with_url(query: str) -> List[str]:
 def load_vectors(index_file_path):
     try:
         index = FAISS.load_local(index_file_path)
-        vectors = index.reconstruct_n(0, index.ntotal)
-        logger.info(f"Loaded {index.ntotal} vectors from the vector store.")
+        vectors = index.reconstruct_n(0, index.faiss)
+        logger.info(f"Loaded {index.faiss} vectors from the vector store.")
         return vectors
     except Exception as e:
         logger.error(f"Failed to load vectors: {e}")
