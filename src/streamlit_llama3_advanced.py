@@ -46,10 +46,53 @@ loaders = {
     '.TXT': TextLoader
 }
 
+# Function to get file types
+def get_file_types(directory):
+    file_types = set()
+    for root, _, files in os.walk(directory):
+        for file in files:
+            file_type = os.path.splitext(file)[1]
+            file_types.add(file_type)
+    return file_types
+
+def create_directory_loader(file_type, directory_path):
+        """
+        Creates and returns a DirectoryLoader using the loader specific to the file type provided
+        
+        Args:
+            file_type (str): Type of file to make loader for
+            directory_path (str): Path to directory
+
+        Returns:
+            DirectoryLoader: loader for the files in the directory provided
+        """
+        return DirectoryLoader(
+        path=directory_path,
+        glob=f"**/*{file_type}",
+        loader_cls=loaders.get(file_type, UnstructuredFileLoader)
+)
+
 def load_documents():
-    loader = DirectoryLoader(DATA_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader)
-    docs = loader.load()
-    return docs
+    file_types = get_file_types(DATA_PATH)
+    documents = []
+        
+    for file_type in file_types:
+            if file_type.strip() != "":
+                    if file_type == '.json':
+                            loader_list = create_directory_loader(file_type, DATA_PATH)
+                            for loader in loader_list:
+                                    docs = loader.load()
+                                    chunks = split_text(docs)
+                                    if chunks != None and chunks != "" and len(chunks) > 0:
+                                            documents.extend(chunks)
+                    else:        
+                            loader = create_directory_loader(file_type, DATA_PATH)
+                            docs = loader.load()
+                            chunks = split_text(docs)
+                            if chunks != None and chunks != "" and len(chunks) > 0:
+                                    documents.extend(chunks)
+    return documents
+
 
 def split_text(docs, max_length=512, chunk_overlap=50):
     splitter = RecursiveCharacterTextSplitter(
@@ -61,14 +104,6 @@ def split_text(docs, max_length=512, chunk_overlap=50):
         chunks.extend(splitter.split_text(doc.page_content))
     return chunks
 
-# Function to get file types
-def get_file_types(directory):
-    file_types = set()
-    for root, _, files in os.walk(directory):
-        for file in files:
-            file_type = os.path.splitext(file)[1]
-            file_types.add(file_type)
-    return file_types
 
 def create_knowledgeBase():
     docs = load_documents()
