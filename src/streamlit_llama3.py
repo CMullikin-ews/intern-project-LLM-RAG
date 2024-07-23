@@ -60,11 +60,16 @@ def create_directory_loader(file_type, directory_path):
         Returns:
             DirectoryLoader: loader for the files in the directory provided
         """
-        return DirectoryLoader(
-        path=directory_path,
-        glob=f"**/*{file_type}",
-        loader_cls=loaders.get(file_type, UnstructuredFileLoader)
-)
+        if file_type == '.json':
+            loader_list = []
+            for file_name in [file for file in os.listdir(directory_path) if file.endswith('.json')]:
+                loader_list.append(JSONLoader(file_path=directory_path+'/'+file_name,jq_schema='.', text_content=False))
+            return loader_list
+        else:
+            return DirectoryLoader(
+            path=directory_path,
+            glob=f"**/*{file_type}",
+            loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
 def split_text(docs, chunk_size=512, chunk_overlap=64):
         """
@@ -82,8 +87,7 @@ def split_text(docs, chunk_size=512, chunk_overlap=64):
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap
         )
-        chunks = splitter.split_documents(docs)
-        return chunks
+        return splitter.split_documents(docs)
 
 def load_documents():
         """
@@ -186,7 +190,7 @@ if __name__=='__main__':
         sl.write("🤖 You can chat by entering your queries")
         
         # Creates and loads all of components for RAG system
-        # create_knowledgeBase()
+        create_knowledgeBase()
         knowledgeBase=load_knowledgeBase()
         llm=load_llm()
         prompt=load_prompt()
