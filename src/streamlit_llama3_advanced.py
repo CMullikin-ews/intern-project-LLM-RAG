@@ -182,9 +182,9 @@ if __name__ == '__main__':
     sl.write("🤖 You can chat by entering your queries")
     
     try:
-        knowledge_base = load_knowledgeBase()
-        llm = load_llm()
-        prompt = load_prompt()
+        knowledge_base = streamlit_llama3.load_knowledgeBase()
+        llm = streamlit_llama3.load_llm()
+        prompt = streamlit_llama3.load_prompt()
         logging.info("Components loaded successfully.")
     except Exception as e:
         logging.error(f"Error loading components: {e}")
