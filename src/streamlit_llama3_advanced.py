@@ -14,6 +14,7 @@ from typing import List
 import os
 import logging
 import random
+import time
 
 # Define data paths
 DATA_PATH = '../../cyber_data'
@@ -35,7 +36,7 @@ loaders = {
 }
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def setup_ollama():
@@ -172,6 +173,42 @@ def respond_with_url(query: str) -> List[str]:
     response = pipeline.generate(query)
     citation_text = "Sources: " + ", ".join(sources)
     return f"{response}\n\n{citation_text}"
+
+
+def load_vectors(index_file_path):
+    try:
+        index = FAISS.read_index(index_file_path)
+        vectors = index.reconstruct_n(0, index.ntotal)
+        logger.info(f"Loaded {index.ntotal} vectors from the vector store.")
+        return vectors
+    except Exception as e:
+        logger.error(f"Failed to load vectors: {e}")
+        return None
+
+# Path to your FAISS index file
+index_file_path = DB_FAISS_PATH
+
+# Load and log vectors
+vectors = load_vectors(index_file_path)
+
+def add_vector(key, vector):
+        # Method to add vectors to the store
+        vectors[key] = vector
+        logger.info(f"Added vector with key: {key}, length: {len(vector)}")
+
+def get_vector(self, key):
+    # Method to retrieve vectors from the store
+    start_time = time.time()
+        
+    if key in self.vectors:
+        vector = self.vectors[key]
+        retrieval_time = time.time() - start_time
+        logger.info(f"Retrieved vector with key: {key}, length: {len(vector)}, retrieval time: {retrieval_time:.4f} seconds")
+        return vector
+    else:
+        logger.warning(f"Vector with key: {key} not found")
+        return None
+
 
 if __name__ == '__main__':
     setup_ollama()
