@@ -157,7 +157,7 @@ def get_relevant_url(query: str) -> List[str]:
     ]
     return random.choice(urls)
 
-def respond_with_url(query: str) -> str:
+def respond_with_url(query: str) -> List[str]:
     retrieved_docs = retriever.retrieve(query)
     sources = [doc.metadata['source'] for doc in retrieved_docs]
     response = generate_response(query)  # Assuming `generate_response` is used here
