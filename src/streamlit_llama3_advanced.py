@@ -70,46 +70,36 @@ def create_directory_loader(file_type, directory_path):
     Returns:
         DirectoryLoader: loader for the files in the directory provided
     """
-def create_directory_loader(file_type, directory_path):
-    """
-    Creates and returns a DirectoryLoader using the loader specific to the file type provided
-        
-    Args:
-        file_type (str): Type of file to make loader for
-        directory_path (str): Path to directory
-
-    Returns: DirectoryLoader: loader for the files in the directory provided
-    """
     if file_type == '.json':
         loader_list = []
         for file_name in [file for file in os.listdir(directory_path) if file.endswith('.json')]:
-            loader_list.append(JSONLoader(file_path=directory_path+'/'+file_name,jq_schema='.', text_content=False))
+            loader_list.append(JSONLoader(file_path=os.path.join(directory_path, file_name), jq_schema='.', text_content=False))
         return loader_list
     else:
         return DirectoryLoader(
-        path=directory_path,
-        glob=f"**/*{file_type}",
-        loader_cls=loaders.get(file_type, UnstructuredFileLoader))
+            path=directory_path,
+            glob=f"**/*{file_type}",
+            loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
 def load_documents():
     file_types = get_file_types(DATA_PATH)
     documents = []
     
     for file_type in file_types:
-        if file_type.strip() != "":
+            if file_type.strip() != "":
                 if file_type == '.json':
-                        loader_list = create_directory_loader(file_type, DATA_PATH)
-                        for loader in loader_list:
-                                docs = loader.load()
-                                chunks = split_text(docs)
-                                if chunks != None and chunks != "" and len(chunks) > 0:
-                                        documents.extend(chunks)
-                else:        
-                        loader = create_directory_loader(file_type, DATA_PATH)
+                    loader_list = create_directory_loader(file_type, DATA_PATH)
+                    for loader in loader_list:
                         docs = loader.load()
                         chunks = split_text(docs)
-                        if chunks != None and chunks != "" and len(chunks) > 0:
-                                documents.extend(chunks)
+                        if chunks:
+                            documents.extend(chunks)
+                else:
+                    loader = create_directory_loader(file_type, DATA_PATH)
+                    docs = loader.load()
+                    chunks = split_text(docs)
+                if chunks != None and chunks != "" and len(chunks) > 0:
+                    documents.extend(chunks)
     return documents
 
 def split_text(docs, max_length=512, chunk_overlap=50):
@@ -128,7 +118,7 @@ def create_knowledgeBase():
     vectorstore.save_local(DB_FAISS_PATH)
 
 def load_knowledgeBase():
-    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
 
@@ -136,14 +126,15 @@ def load_llm():
     return Ollama(model="llama3")
 
 def load_prompt():
-    prompt_text = """
+    prompt = """
     You are an assistant for helping software developers to detect and neutralize viruses.
     Make sure to clearly define any necessary terms and go through the steps to use any application or software.
     Only use the data provided to you.
     Cite the sources used in constructing the response.
     If the answer is not in the data provided, answer "Sorry, I'm not sure how to respond to this"
     """
-    return ChatPromptTemplate.from_template(prompt_text)
+    prompt = ChatPromptTemplate.from_template(prompt)
+    return prompt
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
@@ -166,13 +157,12 @@ def get_relevant_url(query: str) -> List[str]:
     ]
     return random.choice(urls)
 
-def respond_with_url(query: str) -> List[str]:
+def respond_with_url(query: str) -> str:
     retrieved_docs = retriever.retrieve(query)
     sources = [doc.metadata['source'] for doc in retrieved_docs]
-    response = pipeline.generate(query)
+    response = generate_response(query)  # Assuming `generate_response` is used here
     citation_text = "Sources: " + ", ".join(sources)
     return f"{response}\n\n{citation_text}"
-
 
 def load_vectors(index_file_path):
     try:
@@ -191,16 +181,15 @@ index_file_path = DB_FAISS_PATH
 vectors = load_vectors(index_file_path)
 
 def add_vector(key, vector):
-        # Method to add vectors to the store
-        vectors[key] = vector
-        logger.info(f"Added vector with key: {key}, length: {len(vector)}")
+    # Method to add vectors to the store
+    vectors[key] = vector
+    logger.info(f"Added vector with key: {key}, length: {len(vector)}")
 
-def get_vector(self, key):
+def get_vector(key):
     # Method to retrieve vectors from the store
     start_time = time.time()
-        
-    if key in self.vectors:
-        vector = self.vectors[key]
+    if key in vectors:
+        vector = vectors[key]
         retrieval_time = time.time() - start_time
         logger.info(f"Retrieved vector with key: {key}, length: {len(vector)}, retrieval time: {retrieval_time:.4f} seconds")
         return vector
@@ -208,10 +197,9 @@ def get_vector(self, key):
         logger.warning(f"Vector with key: {key} not found")
         return None
 
-
 if __name__ == '__main__':
     setup_ollama()
-    sl.header("Welcome to the 📝PDF bot")
+    sl.header("Welcome to the 📝Computer Virus copilot")
     sl.write("🤖 You can chat by entering your queries")
     
     try:
@@ -228,8 +216,8 @@ if __name__ == '__main__':
     if query:
         try:
             vectors = load_vectors(index_file_path)
-            similar_embeddings=knowledge_base.similarity_search(query)
-            similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+            similar_embeddings = knowledge_base.similarity_search(query)
+            similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             
             retriever = similar_embeddings.as_retriever()
             rag_chain = (
