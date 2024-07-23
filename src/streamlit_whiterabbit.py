@@ -167,11 +167,12 @@ def load_prompt():
             ChatPromptTemplate: Prompt for LLM
         """
         prompt = """You need to answer the question in the sentence as same as in the content.
+        Cite the sources of any data provided.
         Given below is the context and question of the user.
         context = {context}
         question = {question}
-        if the answer is not in the pdf answer "Sorry, I'm not sure how to respond to this."
-         """
+        if the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this."
+        """
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
 
