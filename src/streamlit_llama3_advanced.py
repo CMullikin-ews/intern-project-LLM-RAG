@@ -15,6 +15,7 @@ import os
 import logging
 import random
 import time
+import faiss
 
 # Define data paths
 DATA_PATH = '../../cyber_data'
