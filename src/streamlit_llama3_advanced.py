@@ -43,7 +43,7 @@ os.environ["OLLAMA_HOST"] = "localhost:8501"
 def setup_ollama():
     try:
         os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8888")
+        # os.system("export OLLAMA_HOST=localhost:8888")
         os.system("sudo service ollama stop")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
