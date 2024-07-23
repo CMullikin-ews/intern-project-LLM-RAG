@@ -16,6 +16,12 @@ import logging
 import random
 import time
 import faiss
+import textract
+import re
+from datetime import datetime
+from collections import Counter
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 # Define data paths
 DATA_PATH = '../../cyber_data'
@@ -165,6 +171,62 @@ def respond_with_url(query: str) -> List[str]:
     citation_text = "Sources: " + ", ".join(sources)
     return f"{response}\n\n{citation_text}"
 
+# Define the metadata extraction function
+def extract_text(file_path):
+    """Extract text from the document using textract."""
+    try:
+        text = textract.process(file_path).decode('utf-8')
+        return text
+    except Exception as e:
+        print(f"Error extracting text from {file_path}: {e}")
+        return None
+
+def extract_metadata(text):
+    """Extract metadata from the text."""
+    metadata = {}
+    
+    # Extract title (assuming the title is the first line)
+    lines = text.split('\n')
+    metadata['title'] = lines[0] if lines else 'Unknown Title'
+    
+    # Extract author (assuming author is mentioned in the second line)
+    metadata['author'] = lines[1] if len(lines) > 1 else 'Unknown Author'
+    
+    # Extract date (assuming date is mentioned in the third line in a known format)
+    date_line = lines[2] if len(lines) > 2 else ''
+    date_match = re.search(r'\b\d{4}-\d{2}-\d{2}\b', date_line)
+    metadata['date'] = date_match.group(0) if date_match else 'Unknown Date'
+    
+    # Extract keywords (most common non-stopwords)
+    stop_words = set(stopwords.words('english'))
+    words = word_tokenize(text)
+    words = [word.lower() for word in words if word.isalnum() and word.lower() not in stop_words]
+    keywords = [word for word, freq in Counter(words).most_common(10)]
+    metadata['keywords'] = keywords
+    
+    return metadata
+
+# Example function to process documents and extract metadata
+def process_document(file_path):
+    text = extract_text(file_path)
+    if text:
+        metadata = extract_metadata(text)
+        print(metadata)
+        return metadata
+    return {}
+
+# Integrate the metadata extraction into your document processing pipeline
+# Assuming you have a function that loads and processes documents
+
+def load_and_process_documents(directory_path):
+    # Example of loading documents using DirectoryLoader
+    loader = DirectoryLoader(directory_path, loader_cls=TextLoader)
+    documents = loader.load()
+    
+    for doc in documents:
+        file_path = doc['source']
+        metadata = process_document(file_path)
+        # Store or use the metadata as needed
 
 if __name__ == '__main__':
     setup_ollama()
