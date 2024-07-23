@@ -15,23 +15,6 @@ import os
 import logging
 import random
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-
-# Set environment variables for Ollama
-os.environ["OLLAMA_HOST"] = "localhost:8888"
-
-def setup_ollama():
-    try:
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("sudo pkill ollama")
-        os.system("ollama serve")
-        os.system("ollama pull mxbai-embed-large")
-        os.system("ollama pull jimscard/whiterabbit-neo")
-        logging.info("Ollama setup completed successfully.")
-    except Exception as e:
-        logging.error(f"Error setting up Ollama: {e}")
-
 # Define data paths
 DATA_PATH = '../data'
 DB_FAISS_PATH = '../vectorstore'
@@ -50,6 +33,23 @@ loaders = {
     '.asm': UnstructuredFileLoader,
     '.TXT': TextLoader
 }
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+
+# Set environment variables for Ollama
+os.environ["OLLAMA_HOST"] = "localhost:8501"
+
+def setup_ollama():
+    try:
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("sudo pkill ollama")
+        os.system("ollama serve")
+        os.system("ollama pull mxbai-embed-large")
+        os.system("ollama pull jimscard/whiterabbit-neo")
+        logging.info("Ollama setup completed successfully.")
+    except Exception as e:
+        logging.error(f"Error setting up Ollama: {e}")
 
 def get_file_types(directory):
     file_types = set()
@@ -169,7 +169,7 @@ if __name__ == '__main__':
     
     if query:
         try:
-            similar_embeddings = knowledge_base.similarity_search(query)
+            similar_embeddings = streamlit_llama3.knowledge_base.similarity_search(query)
             retriever = similar_embeddings.as_retriever()
             rag_chain = (
                 {"context": retriever | format_docs, "question": RunnablePassthrough()}
