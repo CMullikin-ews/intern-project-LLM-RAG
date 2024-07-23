@@ -12,6 +12,7 @@ from langchain_community.llms import Ollama
 from langchain.schema import Document
 from typing import List
 import os
+import subprocess
 import logging
 import random
 import time
@@ -48,15 +49,16 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     try:
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8888")
-        os.system("sudo service ollama stop")
-        os.system("ollama serve")
-        os.system("ollama pull mxbai-embed-large")
-        os.system("ollama pull jimscard/whiterabbit-neo")
+        subprocess.run("curl -fsSL https://ollama.com/install.sh | sh", shell=True, check=True)
+        os.environ["OLLAMA_HOST"] = "localhost:8888"
+        subprocess.run("sudo service ollama stop", shell=True, check=True)
+        subprocess.run("ollama serve", shell=True, check=True)
+        subprocess.run("ollama pull mxbai-embed-large", shell=True, check=True)
+        subprocess.run("ollama pull jimscard/whiterabbit-neo", shell=True, check=True)
         logging.info("Ollama setup completed successfully.")
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         logging.error(f"Error setting up Ollama: {e}")
+
 
 def get_file_types(directory):
     file_types = set()
