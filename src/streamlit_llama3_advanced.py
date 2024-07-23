@@ -165,67 +165,11 @@ def respond_with_url(query: str) -> List[str]:
     citation_text = "Sources: " + ", ".join(sources)
     return f"{response}\n\n{citation_text}"
 
-def load_vectors(index_file_path):
-    try:
-        index = FAISS.load_local(index_file_path)
-        vectors = index.reconstruct_n(0, index.faiss)
-        logger.info(f"Loaded {index.faiss} vectors from the vector store.")
-        return vectors
-    except Exception as e:
-        logger.error(f"Failed to load vectors: {e}")
-        return None
-
-# Path to your FAISS index file
-index_file_path = DB_FAISS_PATH
-
-# Load and log vectors
-vectors = load_vectors(index_file_path)
-
-def add_vector(key, vector):
-    # Method to add vectors to the store
-    vectors[key] = vector
-    logger.info(f"Added vector with key: {key}, length: {len(vector)}")
-
-def get_vector(key):
-    # Method to retrieve vectors from the store
-    start_time = time.time()
-    if key in vectors:
-        vector = vectors[key]
-        retrieval_time = time.time() - start_time
-        logger.info(f"Retrieved vector with key: {key}, length: {len(vector)}, retrieval time: {retrieval_time:.4f} seconds")
-        return vector
-    else:
-        logger.warning(f"Vector with key: {key} not found")
-        return None
-
-def query_knowledgeBase(query):
-    try:
-        # Load vectors (this assumes vectors have been pre-loaded as shown above)
-        vectors = load_vectors(index_file_path)
-        if vectors is None:
-            return None
-
-        # Your querying logic here
-        results = FAISS(query, vectors)
-        logger.info(f"Query: {query}, Results: {results}")
-        return results
-    except Exception as e:
-        logger.error(f"Failed to query vector store: {e}")
-        return None
-
-# Example query
-query = "your search query"
-results = query_knowledgeBase(query)
 
 if __name__ == '__main__':
     setup_ollama()
     sl.header("Welcome to the 📝Computer Virus copilot")
     sl.write("🤖 You can chat by entering your queries")
-    
-    vectors = load_vectors(index_file_path)
-    if vectors is not None:
-        query = "your search query"
-        results = query_knowledgeBase(query)
 
     try:
         knowledge_base = load_knowledgeBase()
