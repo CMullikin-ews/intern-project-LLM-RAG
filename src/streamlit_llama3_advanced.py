@@ -97,14 +97,12 @@ def load_documents():
 
 
 def split_text(docs, max_length=512, chunk_overlap=50):
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=max_length,
-        chunk_overlap=chunk_overlap
-    )
-    chunks = []
-    for doc in docs:
-        chunks.extend(splitter.split_text(doc.page_content))
-    return chunks
+        splitter = RecursiveCharacterTextSplitter(
+                chunk_size=max_length,
+                chunk_overlap=chunk_overlap
+        )
+        chunks = splitter.split_documents(docs)
+        return chunks
 
 
 def create_knowledgeBase():
