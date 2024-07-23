@@ -129,7 +129,7 @@ if __name__ == '__main__':
             )
             retriever = similar_embeddings.as_retriever()
             rag_chain = (
-                {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                {"context": retriever | streamlit_llama3.format_docs, "question": RunnablePassthrough()}
                 | prompt
                 | llm
                 | StrOutputParser()
