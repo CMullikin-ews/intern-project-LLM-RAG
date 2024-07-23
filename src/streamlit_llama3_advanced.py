@@ -42,8 +42,8 @@ os.environ["OLLAMA_HOST"] = "localhost:8501"
 
 def setup_ollama():
     try:
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("sudo pkill ollama")
+        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        # os.system("sudo pkill ollama")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
@@ -79,13 +79,22 @@ def create_directory_loader(file_type, directory_path):
 def load_documents():
     file_types = get_file_types(DATA_PATH)
     documents = []
+    
     for file_type in file_types:
-        if file_type.strip():
-            loader = create_directory_loader(file_type, DATA_PATH)
-            docs = loader.load()
-            chunks = split_text(docs)
-            if chunks:
-                documents.extend(chunks)
+        if file_type.strip() != "":
+                if file_type == '.json':
+                        loader_list = create_directory_loader(file_type, DATA_PATH)
+                        for loader in loader_list:
+                                docs = loader.load()
+                                chunks = split_text(docs)
+                                if chunks != None and chunks != "" and len(chunks) > 0:
+                                        documents.extend(chunks)
+                else:        
+                        loader = create_directory_loader(file_type, DATA_PATH)
+                        docs = loader.load()
+                        chunks = split_text(docs)
+                        if chunks != None and chunks != "" and len(chunks) > 0:
+                                documents.extend(chunks)
     return documents
 
 def split_text(docs, max_length=512, chunk_overlap=50):
