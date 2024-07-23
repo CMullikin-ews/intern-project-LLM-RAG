@@ -41,9 +41,9 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     try:
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8888")
-        os.system("sudo service ollama stop")
+        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        # os.system("export OLLAMA_HOST=localhost:8888")
+        # os.system("sudo service ollama stop")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
@@ -197,13 +197,36 @@ def get_vector(key):
         logger.warning(f"Vector with key: {key} not found")
         return None
 
+def query_knowledgeBase(query):
+    try:
+        # Load vectors (this assumes vectors have been pre-loaded as shown above)
+        vectors = load_vectors(index_file_path)
+        if vectors is None:
+            return None
+
+        # Your querying logic here
+        results = FAISS(query, vectors)
+        logger.info(f"Query: {query}, Results: {results}")
+        return results
+    except Exception as e:
+        logger.error(f"Failed to query vector store: {e}")
+        return None
+
+# Example query
+query = "your search query"
+results = query_knowledgeBase(query)
+
 if __name__ == '__main__':
     setup_ollama()
     sl.header("Welcome to the 📝Computer Virus copilot")
     sl.write("🤖 You can chat by entering your queries")
     
+    vectors = load_vectors(index_file_path)
+    if vectors is not None:
+        query = "your search query"
+        results = query_knowledgeBase(query)
+
     try:
-        vectors = load_vectors(index_file_path)
         knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
