@@ -41,9 +41,9 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     try:
-        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        # os.system("export OLLAMA_HOST=localhost:8888")
-        # os.system("sudo service ollama stop")
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("sudo service ollama stop")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
