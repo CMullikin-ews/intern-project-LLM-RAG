@@ -9,6 +9,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 import os
+import subprocess
 
 # Location of the documents for the vector store and location of the vector store
 DATA_PATH = '../../cyber_data'
@@ -30,6 +31,17 @@ loaders = {
     '.asm': UnstructuredFileLoader,
     '.TXT': TextLoader
 }
+
+def setup_ollama():
+        """
+        Downloads (if necessary) and runs ollama locally
+        """
+        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        # os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("sudo service ollama stop")
+        cmd = "ollama serve"
+        with open(os.devnull, 'wb') as devnull:
+                process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
 
 def get_file_types(directory):
         """
@@ -60,34 +72,11 @@ def create_directory_loader(file_type, directory_path):
         Returns:
             DirectoryLoader: loader for the files in the directory provided
         """
-        if file_type == '.json':
-            loader_list = []
-            for file_name in [file for file in os.listdir(directory_path) if file.endswith('.json')]:
-                loader_list.append(JSONLoader(file_path=directory_path+'/'+file_name,jq_schema='.', text_content=False))
-            return loader_list
-        else:
-            return DirectoryLoader(
-            path=directory_path,
-            glob=f"**/*{file_type}",
-            loader_cls=loaders.get(file_type, UnstructuredFileLoader))
-
-def split_text(docs, chunk_size=512, chunk_overlap=64):
-        """
-        Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
-        
-        Parameters:
-                text (str): The input text to be split.
-                max_length (int): The maximum length of each chunk.
-                chunk_overlap (int): The number of characters to overlap between chunks.
-                
-        Returns:
-                List[str]: A list of text chunks.
-        """
-        splitter = RecursiveCharacterTextSplitter(
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap
-        )
-        return splitter.split_documents(docs)
+        return DirectoryLoader(
+        path=directory_path,
+        glob=f"**/*{file_type}",
+        loader_cls=loaders.get(file_type, UnstructuredFileLoader)
+)
 
 def load_documents():
         """
@@ -116,11 +105,32 @@ def load_documents():
                                         documents.extend(chunks)
         return documents
 
+def split_text(docs, chunk_size=512, chunk_overlap=50):
+        """
+        Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
+        
+        Parameters:
+                text (str): The input text to be split.
+                max_length (int): The maximum length of each chunk.
+                chunk_overlap (int): The number of characters to overlap between chunks.
+                
+        Returns:
+                List[str]: A list of text chunks.
+        """
+        splitter = RecursiveCharacterTextSplitter(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap
+        )
+        chunks = splitter.split_documents(docs)
+        return chunks
+
 def create_knowledgeBase():
         """
         Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
         """
+        
         documents = load_documents()
+        os.system("ollama pull mxbai-embed-large")
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
         vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings, allow_dangerous_deserialization=True)
         vectorstore.save_local(DB_FAISS_PATH)
@@ -132,10 +142,11 @@ def load_knowledgeBase():
         Returns:
             FAISS: vector store
         """
+        os.system("ollama pull mxbai-embed-large")
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
         db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         return db
-
+        
 def load_llm():
         """
         Creates and returns Llama3 model
@@ -143,6 +154,7 @@ def load_llm():
         Returns:
             Llama3: LLM
         """
+        os.system("ollama pull llama3")
         llm = Ollama(model="llama3")
         return llm
 
@@ -156,9 +168,6 @@ def load_prompt():
         """
         prompt = """
         You are an assistant for helping software developers to detect and neutralize viruses.
-        Make sure to clearly define any necessary terms and go through the steps to use any application or software.
-        Only use the data provided to you.
-        Cite the sources used in constructing the response.
         If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
         """
         prompt = ChatPromptTemplate.from_template(prompt)
@@ -177,13 +186,7 @@ def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
 if __name__=='__main__':
-        # Downloads and runs ollama, as well as pulling our embedding model and LLM
-        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        # os.system("export OLLAMA_HOST=localhost:8888")
-        # os.system("sudo service ollama stop")
-        os.system("ollama serve")
-        os.system("ollama pull mxbai-embed-large")
-        os.system("ollama pull jimscard/whiterabbit-neo")
+        setup_ollama()
         
         # Creates header for streamlit app and writes to it
         sl.header("Welcome to the 📝Computer Virus copilot")
