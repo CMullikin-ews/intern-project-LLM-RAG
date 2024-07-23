@@ -227,6 +227,7 @@ if __name__ == '__main__':
     
     if query:
         try:
+            vectors = load_vectors(index_file_path)
             similar_embeddings=knowledge_base.similarity_search(query)
             similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             
