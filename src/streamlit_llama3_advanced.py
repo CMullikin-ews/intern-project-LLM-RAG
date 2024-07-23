@@ -1,10 +1,7 @@
 from sklearn import pipeline
 import streamlit as sl
 import streamlit_llama3
-from langchain_community.document_loaders import (
-    PyPDFLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, 
-    UnstructuredHTMLLoader, UnstructuredMarkdownLoader
-)
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
@@ -36,7 +33,7 @@ def setup_ollama():
         logging.error(f"Error setting up Ollama: {e}")
 
 # Define data paths
-DATA_PATH = '../cyber_data'
+DATA_PATH = '../data'
 DB_FAISS_PATH = '../vectorstore'
 
 # File loaders
@@ -98,7 +95,7 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     )
     return splitter.split_documents(docs)
 
-def create_knowledge_base():
+def create_knowledgeBase():
     docs = load_documents()
     chunks = split_text(docs)
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
@@ -106,7 +103,7 @@ def create_knowledge_base():
     vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
     vectorstore.save_local(DB_FAISS_PATH)
 
-def load_knowledge_base():
+def load_knowledgeBase():
     docs = load_documents()
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     vector_store = FAISS.from_documents(docs, embeddings)
@@ -160,7 +157,7 @@ if __name__ == '__main__':
     sl.write("🤖 You can chat by entering your queries")
     
     try:
-        knowledge_base = load_knowledge_base()
+        knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
         logging.info("Components loaded successfully.")
