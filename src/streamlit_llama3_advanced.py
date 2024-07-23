@@ -1,7 +1,5 @@
-from sklearn.pipeline import Pipeline
 import streamlit as sl
-import streamlit_llama3
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
+from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
@@ -10,14 +8,11 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain.schema import Document
-from typing import List
 import os
 import logging
 import random
-import faiss
 import textract
 import re
-from datetime import datetime
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
