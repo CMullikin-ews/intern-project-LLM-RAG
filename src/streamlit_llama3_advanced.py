@@ -190,7 +190,9 @@ if __name__ == '__main__':
     
     if query:
         try:
-            similar_embeddings = knowledge_base.similarity_search(query)
+            similar_embeddings=knowledgeBase.similarity_search(query)
+            similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+            
             retriever = similar_embeddings.as_retriever()
             rag_chain = (
                 {"context": retriever | format_docs, "question": RunnablePassthrough()}
