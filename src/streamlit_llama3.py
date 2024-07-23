@@ -152,7 +152,8 @@ def load_prompt():
         """
         prompt = """
         You are an assistant for helping software developers to detect and neutralize viruses.
-        Cite the documents that the data provided comes from and any other sources used.
+        Make sure to clearly define any necessary terms and go through the steps to use any application or software.
+        Cite the sources used in constructing the response.
         If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
         """
         prompt = ChatPromptTemplate.from_template(prompt)
