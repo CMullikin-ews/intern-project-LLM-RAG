@@ -177,7 +177,8 @@ if __name__=='__main__':
         # os.system("sudo service ollama stop")
         # os.system("ollama serve")
         import subprocess
-        subprocess.call(['gnome-terminal', '-x', 'ollama serve'])
+        # subprocess.call(['gnome-terminal', '-x', 'ollama serve'])
+        subprocess.Popen(['gnome-terminal', '--', 'bash', '-c', 'ollama serve'], stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
         
