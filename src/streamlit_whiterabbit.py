@@ -178,7 +178,7 @@ if __name__=='__main__':
         # os.system("export OLLAMA_HOST=0.0.0.0")
         # os.system("sudo service ollama stop")
         # os.system("sudo systemctl start ollama")
-        # os.system("ollama serve")
+        os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
         
