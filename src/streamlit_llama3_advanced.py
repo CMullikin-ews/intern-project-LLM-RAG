@@ -55,7 +55,7 @@ def get_file_types(directory):
     return file_types
 
 # Load knowledge base
-def load_knowledge_base():
+def load_knowledgeBase():
     file_types = get_file_types(DATA_PATH)
     document_loaders = [loaders[file_type](os.path.join(DATA_PATH, f'*.{file_type}')) for file_type in file_types if file_type in loaders]
     documents = []
@@ -84,7 +84,7 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 if __name__ == '__main__':
-    setup_ollama()
+    # setup_ollama()
     
     # Creates header for Streamlit app and writes to it
     sl.header("Welcome to the 📝PDF bot")
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     
     # Load components for RAG system
     try:
-        knowledge_base = load_knowledge_base()
+        knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
         logging.info("Components loaded successfully.")
