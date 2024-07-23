@@ -16,7 +16,7 @@ import logging
 import random
 
 # Define data paths
-DATA_PATH = '../../data'
+DATA_PATH = '../../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
 
 # File loaders
