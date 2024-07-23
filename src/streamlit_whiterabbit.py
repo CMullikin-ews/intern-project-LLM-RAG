@@ -166,10 +166,12 @@ def load_prompt():
         Returns:
             ChatPromptTemplate: Prompt for LLM
         """
-        prompt = """
-        You are an assistant for helping software developers to detect and neutralize viruses.
-        If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
-        """
+        prompt = """You need to answer the question in the sentence as same as in the content.
+        Given below is the context and question of the user.
+        context = {context}
+        question = {question}
+        if the answer is not in the pdf answer "Sorry, I'm not sure how to respond to this."
+         """
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
 
