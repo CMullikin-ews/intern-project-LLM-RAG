@@ -14,6 +14,7 @@ import logging
 import random
 import textract
 import re
+import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
