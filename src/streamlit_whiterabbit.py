@@ -167,7 +167,6 @@ def load_prompt():
             ChatPromptTemplate: Prompt for LLM
         """
         prompt = """You need to answer the question in the sentence as same as in the content.
-        Cite the sources of any data provided.
         Given below is the context and question of the user.
         context = {context}
         question = {question}
@@ -209,7 +208,7 @@ if __name__=='__main__':
                 similar_embeddings=knowledgeBase.similarity_search(query)
                 similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
                 
-                # Defines chain together query, documents, prompt, and LLM to form process for generating response
+                # Defines chain for combining query, documents, prompt, and LLM for generating response
                 retriever = similar_embeddings.as_retriever()
                 rag_chain = (
                         {"context": retriever | format_docs, "question": RunnablePassthrough()}
