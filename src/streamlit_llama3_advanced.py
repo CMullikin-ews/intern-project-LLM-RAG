@@ -130,15 +130,20 @@ def load_knowledgeBase():
 
 # Load LLM
 def load_llm():
-    return Ollama(model="jimscard/whiterabbit-neo", show_progress=True)
+    llm = Ollama(model="llama3")
+    return llm
 
 # Load prompt
 def load_prompt():
-    prompt_text = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know. Don't try to make up an answer.
-    {context}
-    Question: {question}
+    prompt = """
+    You are an assistant for helping software developers to detect and neutralize viruses.
+    Make sure to clearly define any necessary terms and go through the steps to use any application or software.
+    Only use the data provided to you.
+    Cite the sources used in constructing the response.
+    If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
     """
-    return ChatPromptTemplate.from_template(prompt_text)
+    prompt = ChatPromptTemplate.from_template(prompt)
+    return prompt
 
 # Format documents
 def format_docs(docs):
