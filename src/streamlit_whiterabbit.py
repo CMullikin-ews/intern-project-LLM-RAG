@@ -175,7 +175,7 @@ if __name__=='__main__':
         # Downloads and runs ollama, as well as pulling our embedding model and LLM
         # os.system("curl -fsSL https://ollama.com/install.sh | sh")
         # os.system("sudo service ollama stop")
-        os.system("ollama serve")
+        # os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
         
