@@ -1,7 +1,7 @@
 from sklearn import pipeline
 import streamlit as sl
 import streamlit_llama3
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
@@ -84,7 +84,7 @@ def create_directory_loader(file_type, directory_path):
         if file_type == '.json':
             loader_list = []
             for file_name in [file for file in os.listdir(directory_path) if file.endswith('.json')]:
-                loader_list.extend(JSONLoader(file_path=directory_path+'/'+file_name,jq_schema='.', text_content=False))
+                loader_list.append(JSONLoader(file_path=directory_path+'/'+file_name,jq_schema='.', text_content=False))
             return loader_list
         else:
             return DirectoryLoader(
