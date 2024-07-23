@@ -8,14 +8,9 @@ from langchain_community.embeddings import OllamaEmbeddings
 import os
 import logging
 import textract
-import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-
-# Ensure NLTK resources are downloaded
-nltk.download('stopwords')
-nltk.download('punkt')
 
 # Define data paths
 DATA_PATH = '../../cyber_data'
@@ -54,11 +49,25 @@ def setup_ollama():
 
 def get_file_types(directory):
     file_types = set()
-    for root, _, files in os.walk(directory):
-        for file in files:
-            file_type = os.path.splitext(file)[1]
-            file_types.add(file_type)
+
+    if not os.path.exists(directory):
+        raise FileNotFoundError(f"Directory '{directory}' does not exist.")
+    
+    for filename in os.listdir(directory):
+        if os.path.isfile(os.path.join(directory, filename)):
+            _, ext = os.path.splitext(filename)
+            file_types.add(ext)
+    
     return file_types
+
+try:
+    file_types = get_file_types(DATA_PATH)
+    documents = []
+
+    for file_type in file_types:
+        print(f"Found file type: {file_type}")
+except FileNotFoundError as e:
+    print(e)
 
 def extract_text(file_path):
     try:
