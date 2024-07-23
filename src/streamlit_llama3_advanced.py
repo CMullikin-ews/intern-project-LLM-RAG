@@ -12,10 +12,8 @@ from langchain_community.llms import Ollama
 from langchain.schema import Document
 from typing import List
 import os
-import subprocess
 import logging
 import random
-import time
 import faiss
 import textract
 import re
@@ -49,16 +47,15 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     try:
-        subprocess.run("curl -fsSL https://ollama.com/install.sh | sh", shell=True, check=True)
-        os.environ["OLLAMA_HOST"] = "localhost:8888"
-        subprocess.run("sudo service ollama stop", shell=True, check=True)
-        subprocess.run("ollama serve", shell=True, check=True)
-        subprocess.run("ollama pull mxbai-embed-large", shell=True, check=True)
-        subprocess.run("ollama pull jimscard/whiterabbit-neo", shell=True, check=True)
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("sudo service ollama stop")
+        os.system("ollama serve")
+        os.system("ollama pull mxbai-embed-large")
+        os.system("ollama pull jimscard/whiterabbit-neo")
         logging.info("Ollama setup completed successfully.")
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         logging.error(f"Error setting up Ollama: {e}")
-
 
 def get_file_types(directory):
     file_types = set()
@@ -95,19 +92,19 @@ def load_documents():
     documents = []
     
     for file_type in file_types:
-            if file_type.strip() != "":
-                if file_type == '.json':
-                    loader_list = create_directory_loader(file_type, DATA_PATH)
-                    for loader in loader_list:
-                        docs = loader.load()
-                        chunks = split_text(docs)
-                        if chunks:
-                            documents.extend(chunks)
-                else:
-                    loader = create_directory_loader(file_type, DATA_PATH)
+        if file_type.strip() != "":
+            if file_type == '.json':
+                loader_list = create_directory_loader(file_type, DATA_PATH)
+                for loader in loader_list:
                     docs = loader.load()
                     chunks = split_text(docs)
-                if chunks != None and chunks != "" and len(chunks) > 0:
+                    if chunks:
+                        documents.extend(chunks)
+            else:
+                loader = create_directory_loader(file_type, DATA_PATH)
+                docs = loader.load()
+                chunks = split_text(docs)
+                if chunks:
                     documents.extend(chunks)
     return documents
 
@@ -142,13 +139,12 @@ def load_prompt():
     Cite the sources used in constructing the response.
     If the answer is not in the data provided, answer "Sorry, I'm not sure how to respond to this"
     """
-    prompt = ChatPromptTemplate.from_template(prompt)
-    return prompt
+    return ChatPromptTemplate.from_template(prompt)
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-def generate_response(query: str) -> List[str]:
+def generate_response(query: str) -> str:
     responses = [
         "Sure, I can help with that!",
         "Let me find that information for you.",
@@ -157,7 +153,7 @@ def generate_response(query: str) -> List[str]:
     ]
     return random.choice(responses)
 
-def get_relevant_url(query: str) -> List[str]:
+def get_relevant_url(query: str) -> str:
     urls = [
         "https://example.com/info1",
         "https://example.com/info2",
@@ -166,14 +162,15 @@ def get_relevant_url(query: str) -> List[str]:
     ]
     return random.choice(urls)
 
-def respond_with_url(query: str) -> List[str]:
+def respond_with_url(query: str) -> str:
+    # This function should be updated as per your logic to retrieve documents
+    # As it stands, it assumes `retriever` is a global variable
     retrieved_docs = retriever.retrieve(query)
     sources = [doc.metadata['source'] for doc in retrieved_docs]
-    response = generate_response(query)  # Assuming `generate_response` is used here
+    response = generate_response(query)
     citation_text = "Sources: " + ", ".join(sources)
     return f"{response}\n\n{citation_text}"
 
-# Define the metadata extraction function
 def extract_text(file_path):
     """Extract text from the document using textract."""
     try:
@@ -208,7 +205,6 @@ def extract_metadata(text):
     
     return metadata
 
-# Example function to process documents and extract metadata
 def process_document(file_path):
     text = extract_text(file_path)
     if text:
@@ -216,9 +212,6 @@ def process_document(file_path):
         print(metadata)
         return metadata
     return {}
-
-# Integrate the metadata extraction into your document processing pipeline
-# Assuming you have a function that loads and processes documents
 
 def load_and_process_documents(directory_path):
     # Example of loading documents using DirectoryLoader
@@ -232,7 +225,7 @@ def load_and_process_documents(directory_path):
 
 if __name__ == '__main__':
     setup_ollama()
-    sl.header("Welcome to the 📝Computer Virus copilot")
+    sl.header("Welcome to the 📝Computer Virus Copilot")
     sl.write("🤖 You can chat by entering your queries")
 
     try:
@@ -263,3 +256,4 @@ if __name__ == '__main__':
         except Exception as e:
             logging.error(f"Error processing query: {e}")
             sl.write("An error occurred while processing your query. Please check the logs.")
+
