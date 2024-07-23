@@ -84,12 +84,12 @@ def create_directory_loader(file_type, directory_path):
         loader_list = []
         for file_name in [file for file in os.listdir(directory_path) if file.endswith('.json')]:
             loader_list.append(JSONLoader(file_path=directory_path+'/'+file_name,jq_schema='.', text_content=False))
-            return loader_list
-        else:
-            return DirectoryLoader(
-            path=directory_path,
-            glob=f"**/*{file_type}",
-            loader_cls=loaders.get(file_type, UnstructuredFileLoader))
+        return loader_list
+    else:
+        return DirectoryLoader(
+        path=directory_path,
+        glob=f"**/*{file_type}",
+        loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
 def load_documents():
     file_types = get_file_types(DATA_PATH)
