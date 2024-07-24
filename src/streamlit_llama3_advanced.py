@@ -26,7 +26,7 @@ from nltk.tokenize import word_tokenize
 # nltk.download('punkt')
 
 # Define data paths
-DATA_PATH = '../../cyber_data'
+DATA_PATH = '../../unprocessed_cyber_data'
 DB_FAISS_PATH = '../vectorstore'
 
 # File loaders
@@ -55,8 +55,8 @@ def setup_ollama():
     Downloads (if necessary) and runs ollama locally
     """
     try:
-        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        # os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("export OLLAMA_HOST=localhost:8888")
         os.system("sudo service ollama stop")
         cmd = "ollama serve"
         with open(os.devnull, 'wb') as devnull:
