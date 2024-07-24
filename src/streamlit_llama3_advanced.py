@@ -1,3 +1,4 @@
+import pathlib
 import subprocess
 import docx
 import streamlit as st
@@ -54,16 +55,41 @@ def setup_ollama():
     """
     Downloads (if necessary) and runs ollama locally
     """
-    try:
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8501")
-        os.system("sudo service ollama stop")
-        cmd = "ollama serve"
-        with open(os.devnull, 'wb') as devnull:
-            process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
-        logging.info("Ollama setup completed successfully.")
-    except Exception as e:
-        logging.error(f"Error setting up Ollama: {e}")
+    os.system("curl -fsSL https://ollama.com/install.sh | sh")
+    os.system("export OLLAMA_HOST=localhost:8501")
+    os.system("sudo service ollama stop")
+    cmd = "ollama serve"
+    with open(os.devnull, 'wb') as devnull:
+        process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+
+def txt_file_rename(directory):
+    """
+    Takes .txt files and renames them if they have a line containing title in them
+
+    Args:
+        directory (str): path to directory where files are stored
+    """
+    file_paths = pathlib.Path(directory).glob('*.txt')
+    for file_path in file_paths:
+        file_name = os.path.basename(file_path)
+        file_ext = os.path.splitext(file_name)[1]
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line in file:
+                segments = line.split(':')
+                if 'title' in segments[0].lower() and len(segments) >= 2:
+                    name = segments[1].strip()
+                    new_file_name = os.path.join(directory, name + file_ext)
+                    try:
+                        print(f'Renamed {file_name} to {name}')
+                        os.rename(file_path, new_file_name)
+                        # print(f'Renamed {file_name} to {name}')
+                    except FileNotFoundError:
+                        print(f"FileNotFoundError: {file_path} not found.")
+                    except PermissionError:
+                        print("Permission denied: You don't have the necessary permissions to change the permissions of this file.")
+                    except NotADirectoryError:
+                        print(f"Not a directory: {new_file_name}")
+
 
 def get_file_types(directory):
     file_types = set()
