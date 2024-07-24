@@ -229,5 +229,5 @@ if __name__=='__main__':
                 
                 # Calls chain and writes response to streamlit
                 response=rag_chain.invoke(query) + respond_with_sources(query, retriever)
-                sl.write(similar_embeddings)
+                sl.write(response)
                 
