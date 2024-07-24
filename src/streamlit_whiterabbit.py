@@ -43,6 +43,34 @@ def setup_ollama():
         with open(os.devnull, 'wb') as devnull:
                 process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
 
+def txt_file_rename(directory):
+    """
+    Takes .txt files and renames them if they have a line containing title in them
+
+    Args:
+        directory (str): path to directory where files are stored
+    """
+    file_paths = pathlib.Path(directory).glob('*.txt')
+    for file_path in file_paths:
+        file_name = os.path.basename(file_path)
+        file_ext = os.path.splitext(file_name)[1]
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line in file:
+                segments = line.split(':')
+                if 'title' in segments[0].lower() and len(segments) >= 2:
+                    name = segments[1].strip()
+                    new_file_name = os.path.join(directory, name + file_ext)
+                    try:
+                        print(f'Renamed {file_name} to {name}')
+                        os.rename(file_path, new_file_name)
+                        # print(f'Renamed {file_name} to {name}')
+                    except FileNotFoundError:
+                        print(f"FileNotFoundError: {file_path} not found.")
+                    except PermissionError:
+                        print("Permission denied: You don't have the necessary permissions to change the permissions of this file.")
+                    except NotADirectoryError:
+                        print(f"Not a directory: {new_file_name}")
+
 def get_file_types(directory):
         """
         Traverses all of the files in specified directory and returns types of files that it finds
@@ -85,6 +113,7 @@ def load_documents():
         Returns:
                 List[Document]: Array of documents
         """
+        txt_file_rename(DATA_PATH)
         file_types = get_file_types(DATA_PATH)
         documents = []
         
@@ -105,7 +134,7 @@ def load_documents():
                                         documents.extend(chunks)
         return documents
 
-def split_text(docs, chunk_size=512, chunk_overlap=50):
+def split_text(docs, chunk_size=512, chunk_overlap=64):
         """
         Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
         
@@ -193,7 +222,7 @@ def respond_with_sources(query, retriever) -> str:
     # As it stands, it assumes `retriever` is a global variable
     retrieved_docs = retriever.invoke(query)
     sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] for doc in retrieved_docs}
-    citation_text = "Sources: " + ", ".join(sources)
+    citation_text = "Documents used: " + ", ".join(sources)
     return f"\n\n{citation_text}"
 
 if __name__=='__main__':
