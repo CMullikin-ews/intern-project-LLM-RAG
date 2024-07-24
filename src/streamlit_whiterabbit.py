@@ -157,7 +157,6 @@ def create_knowledgeBase():
         """
         Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
         """
-        
         documents = load_documents()
         os.system("ollama pull mxbai-embed-large")
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
@@ -173,7 +172,7 @@ def load_knowledgeBase():
         """
         os.system("ollama pull mxbai-embed-large")
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
+        db = FAISS.load_local(DB_FAISS_PATH, embeddings)
         return db
         
 def load_llm():
@@ -187,7 +186,6 @@ def load_llm():
         llm = Ollama(model="jimscard/whiterabbit-neo")
         return llm
 
-#creating prompt template using langchain
 def load_prompt():
         """
         Creates and returns prompt for LLM query that specifies how response sounds and structure of response
