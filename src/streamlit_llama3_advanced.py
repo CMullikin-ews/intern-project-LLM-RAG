@@ -27,7 +27,7 @@ nltk.download('stopwords')
 nltk.download('punkt')
 
 # Define data paths
-DATA_PATH = '../../cyber_data'
+DATA_PATH = '../../processed_cyber_data'
 DB_FAISS_PATH = '../vectorstore'
 
 # File loaders
@@ -147,12 +147,20 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     )
     return splitter.split_documents(docs)
 
-def create_knowledgeBase():
+def create_knowledgeBase(directory):
+    """
+    Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
+    """
     documents = load_documents()
     os.system("ollama pull mxbai-embed-large")
-    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-    vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings, allow_dangerous_deserialization=True)
-    vectorstore.save_local(DB_FAISS_PATH)
+    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
+    if os.path.exists(DB_FAISS_PATH + '/index.faiss'):
+        old_vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings)
+        old_vectorstore.merge_from(DB_FAISS_PATH)
+        old_vectorstore.save_local(DB_FAISS_PATH)
+    else:
+        vectorstore.save_local(DB_FAISS_PATH)
 
 def load_knowledgeBase():
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
