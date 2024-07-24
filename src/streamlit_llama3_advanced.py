@@ -56,7 +56,7 @@ def setup_ollama():
     """
     try:
         os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("export OLLAMA_HOST=localhost:11434")
         os.system("sudo service ollama stop")
         cmd = "ollama serve"
         with open(os.devnull, 'wb') as devnull:
