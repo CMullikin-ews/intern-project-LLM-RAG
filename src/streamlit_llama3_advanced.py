@@ -51,16 +51,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def setup_ollama():
-
-    """
-    Downloads (if necessary) and runs ollama locally
-    """
-    os.system("curl -fsSL https://ollama.com/install.sh | sh")
-    os.system("export OLLAMA_HOST=localhost:8501")
-    os.system("sudo service ollama stop")
-    cmd = "ollama serve"
-    with open(os.devnull, 'wb') as devnull:
-        process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+    """Downloads (if necessary) and runs ollama locally."""
+    subprocess.run("curl -fsSL https://ollama.com/install.sh | sh", shell=True, check=True)
+    os.environ["OLLAMA_HOST"] = "localhost:8501"
+    subprocess.run("sudo service ollama stop", shell=True, check=True)
+    subprocess.Popen("ollama serve", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def txt_file_rename(directory):
     """
