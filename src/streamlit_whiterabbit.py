@@ -188,6 +188,14 @@ def format_docs(docs):
         """
         return "\n\n".join(doc.page_content for doc in docs)
 
+def respond_with_sources(query, retriever) -> str:
+    # This function should be updated as per your logic to retrieve documents
+    # As it stands, it assumes `retriever` is a global variable
+    retrieved_docs = retriever.invoke(query)
+    sources = [doc.metadata['source'] for doc in retrieved_docs]
+    citation_text = "Sources: " + ", ".join(sources)
+    return f"\n\n{citation_text}"
+
 if __name__=='__main__':
         setup_ollama()
         
@@ -220,6 +228,6 @@ if __name__=='__main__':
                     )
                 
                 # Calls chain and writes response to streamlit
-                response=rag_chain.invoke(query)
+                response=rag_chain.invoke(query) + respond_with_sources(query, retriever)
                 sl.write(similar_embeddings)
                 
