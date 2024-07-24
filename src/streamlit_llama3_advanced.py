@@ -1,4 +1,4 @@
-import streamlit as sl
+import streamlit as st
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -9,6 +9,8 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain.schema import Document
 import os
+import PyPDF2
+import docx
 import logging
 import random
 import textract
@@ -17,6 +19,10 @@ import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+
+# Download NLTK stopwords
+nltk.download('stopwords')
+nltk.download('punkt')
 
 # Define data paths
 DATA_PATH = '../../cyber_data'
@@ -167,27 +173,43 @@ def respond_with_url(query: str) -> str:
     citation_text = "Sources: " + ", ".join(sources)
     return f"{response}\n\n{citation_text}"
 
-def extract_text_from_file(DATA_PATH):
-    """
-    Extracts text from the given file.
+def extract_text_from_file(file_path):
+    ext = os.path.splitext(file_path)[1].lower()
+    text = ''
+    
+    if ext == '.txt':
+        with open(file_path, 'r', encoding='utf-8') as file:
+            text = file.read()
+    
+    elif ext == '.pdf':
+        with open(file_path, 'rb') as file:
+            reader = PyPDF2.PdfFileReader(file)
+            for page_num in range(reader.numPages):
+                text += reader.getPage(page_num).extract_text()
+    
+    elif ext == '.docx':
+        doc = docx.Document(file_path)
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + '\n'
+    
+    return text
 
-    Args:
-        file_path (str): Path to the file
-
-    Returns:
-        str: Extracted text
-    """
-    try:
-        text = textract.process(DATA_PATH)
-        return text.decode('utf-8')
-    except Exception as e:
-        print(f"An error occurred while extracting text: {e}")
-        return ""
+def extract_text_from_directory(directory_path):
+    extracted_texts = {}
+    
+    for filename in os.listdir(directory_path):
+        file_path = os.path.join(directory_path, filename)
+        if os.path.isfile(file_path):
+            text = extract_text_from_file(file_path)
+            extracted_texts[filename] = text
+    
+    return extracted_texts
 
 # Example usage
-file_path = DATA_PATH
-extracted_text = extract_text_from_file(file_path)
-print(extracted_text)
+directory_path = '../../cyber_data'
+texts = extract_text_from_directory(directory_path)
+for filename, text in texts.items():
+    print(f"Text from {filename}:\n{text}\n")
 
 def extract_metadata(text):
     """Extract metadata from the text."""
@@ -216,8 +238,8 @@ def extract_metadata(text):
 
 if __name__ == '__main__':
     setup_ollama()
-    sl.header("Welcome to the 📝Computer Virus Copilot")
-    sl.write("🤖 You can chat by entering your queries")
+    st.header("Welcome to the 📝Computer Virus Copilot")
+    st.write("🤖 You can chat by entering your queries")
 
     try:
         knowledge_base = load_knowledgeBase()
@@ -226,9 +248,9 @@ if __name__ == '__main__':
         logging.info("Components loaded successfully.")
     except Exception as e:
         logging.error(f"Error loading components: {e}")
-        sl.write("An error occurred while loading the components. Please check the logs.")
+        st.write("An error occurred while loading the components. Please check the logs.")
 
-    query = sl.text_input('Enter some text')
+    query = st.text_input('Enter some text')
     
     if query:
         try:
@@ -243,10 +265,10 @@ if __name__ == '__main__':
                 | StrOutputParser()
             )
             response = rag_chain.invoke(query)
-            sl.write(response)
+            st.write(response)
         except Exception as e:
             logging.error(f"Error processing query: {e}")
-            sl.write("An error occurred while processing your query. Please check the logs.")
+            st.write("An error occurred while processing your query. Please check the logs.")
 
 
 
