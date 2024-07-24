@@ -49,7 +49,7 @@ def setup_ollama():
         os.system("sudo service ollama stop")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
-        os.system("ollama pull jimscard/whiterabbit-neo")
+        os.system("ollama pull llama3")
         logging.info("Ollama setup completed successfully.")
     except Exception as e:
         logging.error(f"Error setting up Ollama: {e}")
