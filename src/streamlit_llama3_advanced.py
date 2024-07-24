@@ -13,7 +13,6 @@ import PyPDF2
 import docx
 import logging
 import random
-import textract
 import re
 import nltk
 from collections import Counter
@@ -117,7 +116,7 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     )
     return splitter.split_documents(docs)
 
-def create_knowledgeBase():
+def create_knowledge_base():
     docs = load_documents()
     chunks = split_text(docs)
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
@@ -125,7 +124,7 @@ def create_knowledgeBase():
     vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
     vectorstore.save_local(DB_FAISS_PATH)
 
-def load_knowledgeBase():
+def load_knowledge_base():
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
@@ -205,12 +204,6 @@ def extract_text_from_directory(directory_path):
     
     return extracted_texts
 
-# Example usage
-directory_path = DATA_PATH
-texts = extract_text_from_directory(directory_path)
-for filename, text in texts.items():
-    print(f"Text from {filename}:\n{text}\n")
-
 def extract_metadata(text):
     """Extract metadata from the text."""
     metadata = {}
@@ -242,7 +235,7 @@ if __name__ == '__main__':
     st.write("🤖 You can chat by entering your queries")
 
     try:
-        knowledge_base = load_knowledgeBase()
+        knowledge_base = load_knowledge_base()
         llm = load_llm()
         prompt = load_prompt()
         logging.info("Components loaded successfully.")
@@ -255,7 +248,6 @@ if __name__ == '__main__':
     if query:
         try:
             similar_embeddings = knowledge_base.similarity_search(query)
-            similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             
             retriever = similar_embeddings.as_retriever()
             rag_chain = (
@@ -269,6 +261,3 @@ if __name__ == '__main__':
         except Exception as e:
             logging.error(f"Error processing query: {e}")
             st.write("An error occurred while processing your query. Please check the logs.")
-
-
-
