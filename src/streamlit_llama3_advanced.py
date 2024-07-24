@@ -262,7 +262,7 @@ if __name__ == '__main__':
                 | llm
                 | StrOutputParser()
             )
-            response = rag_chain.invoke(query) + respond_with_sources()
+            response = rag_chain.invoke(query) + respond_with_sources(query, retriever)
             st.write(response)
         except Exception as e:
             logging.error(f"Error processing query: {e}")
