@@ -13,7 +13,6 @@ import PyPDF2
 # import docx
 import logging
 import random
-import textract
 import re
 import nltk
 from collections import Counter
