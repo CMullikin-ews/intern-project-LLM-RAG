@@ -192,7 +192,7 @@ def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
     # As it stands, it assumes `retriever` is a global variable
     retrieved_docs = retriever.invoke(query)
-    sources = [doc.metadata['source'] for doc in retrieved_docs]
+    sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] for doc in retrieved_docs}
     citation_text = "Sources: " + ", ".join(sources)
     return f"\n\n{citation_text}"
 
