@@ -1,3 +1,4 @@
+import docx
 import streamlit as st
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -24,7 +25,7 @@ nltk.download('stopwords')
 nltk.download('punkt')
 
 # Define data paths
-DATA_PATH = '../../cyber_data'
+DATA_PATH = '../../cyber_data/cyber_data.zip'
 DB_FAISS_PATH = '../vectorstore'
 
 # File loaders
