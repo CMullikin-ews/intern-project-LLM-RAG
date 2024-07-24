@@ -48,8 +48,8 @@ loaders = {
 
 def setup_ollama():
     """Downloads (if necessary) and runs ollama locally."""
-    os.system("curl -fsSL https://ollama.com/install.sh | sh")
-    os.system("export OLLAMA_HOST=localhost:8501")
+    # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+    # os.system("export OLLAMA_HOST=localhost:8501")
     os.system("sudo service ollama stop")
     cmd = "ollama serve"
     with open(os.devnull, 'wb') as devnull:
@@ -163,7 +163,8 @@ def create_knowledgeBase(directory):
         vectorstore.save_local(DB_FAISS_PATH)
 
 def load_knowledgeBase():
-    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    os.system("ollama pull mxbai-embed-large")
+    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
 
