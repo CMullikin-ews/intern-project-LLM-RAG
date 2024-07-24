@@ -10,7 +10,7 @@ from langchain_community.llms import Ollama
 from langchain.schema import Document
 import os
 import PyPDF2
-import docx
+# import docx
 import logging
 import random
 import re
@@ -163,14 +163,13 @@ def get_relevant_url(query: str) -> str:
     ]
     return random.choice(urls)
 
-def respond_with_url(query: str) -> str:
+def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
     # As it stands, it assumes `retriever` is a global variable
-    retrieved_docs = retriever.retrieve(query)
+    retrieved_docs = retriever.invoke(query)
     sources = [doc.metadata['source'] for doc in retrieved_docs]
-    response = generate_response(query)
     citation_text = "Sources: " + ", ".join(sources)
-    return f"{response}\n\n{citation_text}"
+    return f"\n\n{citation_text}"
 
 def extract_text_from_file(file_path):
     ext = os.path.splitext(file_path)[1].lower()
@@ -256,7 +255,7 @@ if __name__ == '__main__':
                 | llm
                 | StrOutputParser()
             )
-            response = rag_chain.invoke(query)
+            response = rag_chain.invoke(query) + respond_with_sources(query, retriever)
             st.write(response)
         except Exception as e:
             logging.error(f"Error processing query: {e}")
