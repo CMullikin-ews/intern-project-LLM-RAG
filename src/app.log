@@ -1,7 +1,7 @@
-2024-07-24 16:18:26,528 - root - INFO - Ollama setup completed successfully.
-2024-07-24 16:18:26,659 - faiss.loader - INFO - Loading faiss with AVX2 support.
-2024-07-24 16:18:26,677 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
-2024-07-24 16:18:26,686 - root - INFO - Components loaded successfully.
-2024-07-24 16:18:31,673 - root - INFO - Ollama setup completed successfully.
-2024-07-24 16:18:31,680 - root - INFO - Components loaded successfully.
-2024-07-24 16:18:31,690 - root - ERROR - Error processing query: Error raised by inference endpoint: HTTPConnectionPool(host='localhost', port=11434): Max retries exceeded with url: /api/embeddings (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7f88c25c0790>: Failed to establish a new connection: [Errno 111] Connection refused'))
+2024-07-24 16:19:15,796 - root - INFO - Ollama setup completed successfully.
+2024-07-24 16:19:15,933 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2024-07-24 16:19:15,955 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2024-07-24 16:19:15,965 - root - INFO - Components loaded successfully.
+2024-07-24 16:19:20,724 - root - INFO - Ollama setup completed successfully.
+2024-07-24 16:19:20,731 - root - INFO - Components loaded successfully.
+2024-07-24 16:19:21,284 - root - ERROR - Error processing query: Error raised by inference endpoint: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
