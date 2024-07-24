@@ -12,7 +12,6 @@ from langchain_community.llms import Ollama
 from langchain.schema import Document
 import os
 import PyPDF2
-import docx
 import logging
 import random
 import re
@@ -49,20 +48,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def setup_ollama():
-
-    """
-    Downloads (if necessary) and runs ollama locally
-    """
     try:
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8888")
-        os.system("sudo service ollama stop")
+        subprocess.run("curl -fsSL https://ollama.com/install.sh | sh", shell=True, check=True)
+        os.environ["OLLAMA_HOST"] = "localhost:8888"
+        subprocess.run("sudo service ollama stop", shell=True, check=True)
         cmd = "ollama serve"
-        with open(os.devnull, 'wb') as devnull:
-            process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         logging.info("Ollama setup completed successfully.")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error setting up Ollama: {e.stderr.decode()}")
     except Exception as e:
-        logging.error(f"Error setting up Ollama: {e}")
+        logging.error(f"Unexpected error: {e}")
+
 
 def get_file_types(directory):
     file_types = set()
@@ -100,19 +97,23 @@ def load_documents():
     
     for file_type in file_types:
         if file_type.strip() != "":
-            if file_type == '.json':
-                loader_list = create_directory_loader(file_type, DATA_PATH)
-                for loader in loader_list:
+            logger.info(f"Processing files of type: {file_type}")
+            try:
+                if file_type == '.json':
+                    loader_list = create_directory_loader(file_type, DATA_PATH)
+                    for loader in loader_list:
+                        docs = loader.load()
+                        chunks = split_text(docs)
+                        if chunks:
+                            documents.extend(chunks)
+                else:
+                    loader = create_directory_loader(file_type, DATA_PATH)
                     docs = loader.load()
                     chunks = split_text(docs)
                     if chunks:
                         documents.extend(chunks)
-            else:
-                loader = create_directory_loader(file_type, DATA_PATH)
-                docs = loader.load()
-                chunks = split_text(docs)
-                if chunks:
-                    documents.extend(chunks)
+            except Exception as e:
+                logger.error(f"Error loading documents of type {file_type}: {e}")
     return documents
 
 def split_text(docs, max_length=512, chunk_overlap=50):
@@ -136,8 +137,12 @@ def load_knowledgeBase():
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
 
+
 def load_llm():
-    return Ollama(model="llama3")
+    try:
+        return Ollama(model="llama3")
+    except Exception as e:
+        logger.error(f"Error loading LLM: {e}")
 
 def load_prompt():
     prompt = """
@@ -147,7 +152,10 @@ def load_prompt():
     Cite the sources used in constructing the response.
     If the answer is not in the data provided, answer "Sorry, I'm not sure how to respond to this"
     """
-    return ChatPromptTemplate.from_template(prompt)
+    try:
+        return ChatPromptTemplate.from_template(prompt)
+    except Exception as e:
+        logger.error(f"Error loading prompt: {e}")
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
@@ -173,40 +181,51 @@ def get_relevant_url(query: str) -> str:
 def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
     # As it stands, it assumes `retriever` is a global variable
-    retrieved_docs = retriever.invoke(query)
-    sources = [doc.metadata['source'] for doc in retrieved_docs]
-    citation_text = "Sources: " + ", ".join(sources)
-    return f"\n\n{citation_text}"
+    try:
+        retrieved_docs = retriever.invoke(query)
+        sources = [doc.metadata['source'] for doc in retrieved_docs]
+        citation_text = "Sources: " + ", ".join(sources)
+        return f"\n\n{citation_text}"
+    except Exception as e:
+        logger.error(f"Error retrieving sources: {e}")
+        return "\n\nSources: Unknown"
 
 def extract_text_from_file(file_path):
     ext = os.path.splitext(file_path)[1].lower()
     text = ''
     
-    if ext == '.txt':
-        with open(file_path, 'r', encoding='utf-8') as file:
-            text = file.read()
+    try:
+        if ext == '.txt':
+            with open(file_path, 'r', encoding='utf-8') as file:
+                text = file.read()
+        
+        elif ext == '.pdf':
+            with open(file_path, 'rb') as file:
+                reader = PyPDF2.PdfFileReader(file)
+                for page_num in range(reader.numPages):
+                    text += reader.getPage(page_num).extract_text()
+        
+        elif ext == '.docx':
+            doc = docx.Document(file_path)
+            for paragraph in doc.paragraphs:
+                text += paragraph.text + '\n'
     
-    elif ext == '.pdf':
-        with open(file_path, 'rb') as file:
-            reader = PyPDF2.PdfFileReader(file)
-            for page_num in range(reader.numPages):
-                text += reader.getPage(page_num).extract_text()
-    
-    elif ext == '.docx':
-        doc = docx.Document(file_path)
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + '\n'
+    except Exception as e:
+        logger.error(f"Error extracting text from file {file_path}: {e}")
     
     return text
 
 def extract_text_from_directory(directory_path):
     extracted_texts = {}
     
-    for filename in os.listdir(directory_path):
-        file_path = os.path.join(directory_path, filename)
-        if os.path.isfile(file_path):
-            text = extract_text_from_file(file_path)
-            extracted_texts[filename] = text
+    try:
+        for filename in os.listdir(directory_path):
+            file_path = os.path.join(directory_path, filename)
+            if os.path.isfile(file_path):
+                text = extract_text_from_file(file_path)
+                extracted_texts[filename] = text
+    except Exception as e:
+        logger.error(f"Error extracting text from directory {directory_path}: {e}")
     
     return extracted_texts
 
