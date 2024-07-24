@@ -47,15 +47,17 @@ loaders = {
 }
 
 def setup_ollama():
-    """
-    Downloads (if necessary) and runs ollama locally
-    """
-    os.system("curl -fsSL https://ollama.com/install.sh | sh")
-    os.system("export OLLAMA_HOST=localhost:8501")
-    os.system("sudo service ollama stop")
-    cmd = "ollama serve"
-    with open(os.devnull, 'wb') as devnull:
-        process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+    """Downloads (if necessary) and runs ollama locally."""
+    try:
+        result = subprocess.run("curl -fsSL https://ollama.com/install.sh | sh", shell=True, check=True, capture_output=True, text=True)
+        print(result.stdout)
+        os.environ["OLLAMA_HOST"] = "localhost:8501"
+        subprocess.run("sudo service ollama stop", shell=True, check=True)
+        subprocess.Popen("ollama serve", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred: {e}")
+        print(f"Standard output: {e.stdout}")
+        print(f"Standard error: {e.stderr}")
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
