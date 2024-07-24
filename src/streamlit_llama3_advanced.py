@@ -1,3 +1,4 @@
+import subprocess
 import docx
 import streamlit as st
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
@@ -49,12 +50,15 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     try:
-        os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        os.system("export OLLAMA_HOST=localhost:8888")
+        """
+        Downloads (if necessary) and runs ollama locally
+        """
+        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        # os.system("export OLLAMA_HOST=localhost:8888")
         os.system("sudo service ollama stop")
-        os.system("ollama serve")
-        os.system("ollama pull mxbai-embed-large")
-        os.system("ollama pull llama3")
+        cmd = "ollama serve"
+        with open(os.devnull, 'wb') as devnull:
+                process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
         logging.info("Ollama setup completed successfully.")
     except Exception as e:
         logging.error(f"Error setting up Ollama: {e}")
