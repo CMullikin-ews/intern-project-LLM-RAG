@@ -10,7 +10,7 @@ from langchain_community.llms import Ollama
 from langchain.schema import Document
 import os
 import PyPDF2
-import docx
+# import docx
 import logging
 import random
 import textract
