@@ -60,13 +60,12 @@ def setup_ollama():
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
 
-
 def get_file_types(directory):
     file_types = set()
     for filename in os.listdir(directory):
         if os.path.isfile(os.path.join(directory, filename)):
             _, ext = os.path.splitext(filename)
-            file_types.add(ext)
+            file_types.add(ext.lower())
     return file_types
 
 def create_directory_loader(file_type, directory_path):
@@ -123,7 +122,7 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     )
     return splitter.split_documents(docs)
 
-def create_knowledgeBase():
+def create_knowledge_base():
     docs = load_documents()
     os.system("ollama pull mxbai-embed-large")
     chunks = split_text(docs)
@@ -132,17 +131,17 @@ def create_knowledgeBase():
     vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings, allow_dangerous_deserialization=True)
     vectorstore.save_local(DB_FAISS_PATH)
 
-def load_knowledgeBase():
+def load_knowledge_base():
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
-
 
 def load_llm():
     try:
         return Ollama(model="llama3")
     except Exception as e:
         logger.error(f"Error loading LLM: {e}")
+        return None
 
 def load_prompt():
     prompt = """
@@ -156,6 +155,7 @@ def load_prompt():
         return ChatPromptTemplate.from_template(prompt)
     except Exception as e:
         logger.error(f"Error loading prompt: {e}")
+        return None
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
@@ -179,11 +179,9 @@ def get_relevant_url(query: str) -> str:
     return random.choice(urls)
 
 def respond_with_sources(query, retriever) -> str:
-    # This function should be updated as per your logic to retrieve documents
-    # As it stands, it assumes `retriever` is a global variable
     try:
         retrieved_docs = retriever.invoke(query)
-        sources = [doc.metadata['source'] for doc in retrieved_docs]
+        sources = [doc.metadata.get('source', 'Unknown') for doc in retrieved_docs]
         citation_text = "Sources: " + ", ".join(sources)
         return f"\n\n{citation_text}"
     except Exception as e:
@@ -260,7 +258,7 @@ if __name__ == '__main__':
     st.write("🤖 You can chat by entering your queries")
 
     try:
-        knowledge_base = load_knowledgeBase()
+        knowledge_base = load_knowledge_base()
         llm = load_llm()
         prompt = load_prompt()
         logging.info("Components loaded successfully.")
@@ -286,3 +284,4 @@ if __name__ == '__main__':
         except Exception as e:
             logging.error(f"Error processing query: {e}")
             st.write("An error occurred while processing your query. Please check the logs.")
+
