@@ -49,19 +49,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def setup_ollama():
-    try:
-        """
-        Downloads (if necessary) and runs ollama locally
-        """
-        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        # os.system("export OLLAMA_HOST=localhost:8888")
-        os.system("sudo service ollama stop")
-        cmd = "ollama serve"
-        with open(os.devnull, 'wb') as devnull:
-                process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
-        logging.info("Ollama setup completed successfully.")
-    except Exception as e:
-        logging.error(f"Error setting up Ollama: {e}")
+    """
+    Downloads (if necessary) and runs ollama locally
+    """
+    # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+    # os.system("export OLLAMA_HOST=localhost:8888")
+    os.system("sudo service ollama stop")
+    cmd = "ollama serve"
+    with open(os.devnull, 'wb') as devnull:
+        process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
 
 def get_file_types(directory):
     file_types = set()
