@@ -12,6 +12,7 @@ from langchain_community.llms import Ollama
 from langchain.schema import Document
 import os
 import PyPDF2
+import docx
 import logging
 import random
 import re
@@ -48,24 +49,27 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def setup_ollama():
+
+    """
+    Downloads (if necessary) and runs ollama locally
+    """
     try:
-        subprocess.run("curl -fsSL https://ollama.com/install.sh | sh", shell=True, check=True)
-        os.environ["OLLAMA_HOST"] = "localhost:8888"
-        subprocess.run("sudo service ollama stop", shell=True, check=True)
+        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        # os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("sudo service ollama stop")
         cmd = "ollama serve"
-        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        with open(os.devnull, 'wb') as devnull:
+            process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
         logging.info("Ollama setup completed successfully.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error setting up Ollama: {e.stderr.decode()}")
     except Exception as e:
-        logging.error(f"Unexpected error: {e}")
+        logging.error(f"Error setting up Ollama: {e}")
 
 def get_file_types(directory):
     file_types = set()
     for filename in os.listdir(directory):
         if os.path.isfile(os.path.join(directory, filename)):
             _, ext = os.path.splitext(filename)
-            file_types.add(ext.lower())
+            file_types.add(ext)
     return file_types
 
 def create_directory_loader(file_type, directory_path):
@@ -96,23 +100,19 @@ def load_documents():
     
     for file_type in file_types:
         if file_type.strip() != "":
-            logger.info(f"Processing files of type: {file_type}")
-            try:
-                if file_type == '.json':
-                    loader_list = create_directory_loader(file_type, DATA_PATH)
-                    for loader in loader_list:
-                        docs = loader.load()
-                        chunks = split_text(docs)
-                        if chunks:
-                            documents.extend(chunks)
-                else:
-                    loader = create_directory_loader(file_type, DATA_PATH)
+            if file_type == '.json':
+                loader_list = create_directory_loader(file_type, DATA_PATH)
+                for loader in loader_list:
                     docs = loader.load()
                     chunks = split_text(docs)
                     if chunks:
                         documents.extend(chunks)
-            except Exception as e:
-                logger.error(f"Error loading documents of type {file_type}: {e}")
+            else:
+                loader = create_directory_loader(file_type, DATA_PATH)
+                docs = loader.load()
+                chunks = split_text(docs)
+                if chunks:
+                    documents.extend(chunks)
     return documents
 
 def split_text(docs, max_length=512, chunk_overlap=50):
@@ -122,7 +122,7 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     )
     return splitter.split_documents(docs)
 
-def create_knowledge_base():
+def create_knowledgeBase():
     docs = load_documents()
     os.system("ollama pull mxbai-embed-large")
     chunks = split_text(docs)
@@ -131,17 +131,13 @@ def create_knowledge_base():
     vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings, allow_dangerous_deserialization=True)
     vectorstore.save_local(DB_FAISS_PATH)
 
-def load_knowledge_base():
+def load_knowledgeBase():
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
 
 def load_llm():
-    try:
-        return Ollama(model="llama3")
-    except Exception as e:
-        logger.error(f"Error loading LLM: {e}")
-        return None
+    return Ollama(model="llama3")
 
 def load_prompt():
     prompt = """
@@ -151,11 +147,7 @@ def load_prompt():
     Cite the sources used in constructing the response.
     If the answer is not in the data provided, answer "Sorry, I'm not sure how to respond to this"
     """
-    try:
-        return ChatPromptTemplate.from_template(prompt)
-    except Exception as e:
-        logger.error(f"Error loading prompt: {e}")
-        return None
+    return ChatPromptTemplate.from_template(prompt)
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
@@ -179,51 +171,42 @@ def get_relevant_url(query: str) -> str:
     return random.choice(urls)
 
 def respond_with_sources(query, retriever) -> str:
-    try:
-        retrieved_docs = retriever.invoke(query)
-        sources = [doc.metadata.get('source', 'Unknown') for doc in retrieved_docs]
-        citation_text = "Sources: " + ", ".join(sources)
-        return f"\n\n{citation_text}"
-    except Exception as e:
-        logger.error(f"Error retrieving sources: {e}")
-        return "\n\nSources: Unknown"
+    # This function should be updated as per your logic to retrieve documents
+    # As it stands, it assumes `retriever` is a global variable
+    retrieved_docs = retriever.invoke(query)
+    sources = [doc.metadata['source'] for doc in retrieved_docs]
+    citation_text = "Sources: " + ", ".join(sources)
+    return f"\n\n{citation_text}"
 
 def extract_text_from_file(file_path):
     ext = os.path.splitext(file_path)[1].lower()
     text = ''
     
-    try:
-        if ext == '.txt':
-            with open(file_path, 'r', encoding='utf-8') as file:
-                text = file.read()
-        
-        elif ext == '.pdf':
-            with open(file_path, 'rb') as file:
-                reader = PyPDF2.PdfFileReader(file)
-                for page_num in range(reader.numPages):
-                    text += reader.getPage(page_num).extract_text()
-        
-        elif ext == '.docx':
-            doc = docx.Document(file_path)
-            for paragraph in doc.paragraphs:
-                text += paragraph.text + '\n'
+    if ext == '.txt':
+        with open(file_path, 'r', encoding='utf-8') as file:
+            text = file.read()
     
-    except Exception as e:
-        logger.error(f"Error extracting text from file {file_path}: {e}")
+    elif ext == '.pdf':
+        with open(file_path, 'rb') as file:
+            reader = PyPDF2.PdfFileReader(file)
+            for page_num in range(reader.numPages):
+                text += reader.getPage(page_num).extract_text()
+    
+    elif ext == '.docx':
+        doc = docx.Document(file_path)
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + '\n'
     
     return text
 
 def extract_text_from_directory(directory_path):
     extracted_texts = {}
     
-    try:
-        for filename in os.listdir(directory_path):
-            file_path = os.path.join(directory_path, filename)
-            if os.path.isfile(file_path):
-                text = extract_text_from_file(file_path)
-                extracted_texts[filename] = text
-    except Exception as e:
-        logger.error(f"Error extracting text from directory {directory_path}: {e}")
+    for filename in os.listdir(directory_path):
+        file_path = os.path.join(directory_path, filename)
+        if os.path.isfile(file_path):
+            text = extract_text_from_file(file_path)
+            extracted_texts[filename] = text
     
     return extracted_texts
 
@@ -258,7 +241,7 @@ if __name__ == '__main__':
     st.write("🤖 You can chat by entering your queries")
 
     try:
-        knowledge_base = load_knowledge_base()
+        knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
         logging.info("Components loaded successfully.")
@@ -284,4 +267,3 @@ if __name__ == '__main__':
         except Exception as e:
             logging.error(f"Error processing query: {e}")
             st.write("An error occurred while processing your query. Please check the logs.")
-
