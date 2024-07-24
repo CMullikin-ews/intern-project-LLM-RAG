@@ -1,5 +1,4 @@
 import streamlit as sl
-import streamlit_llama3
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -44,9 +43,9 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     try:
-        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        # os.system("export OLLAMA_HOST=localhost:8888")
-        # os.system("sudo service ollama stop")
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("sudo service ollama stop")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull llama3")
@@ -221,9 +220,9 @@ if __name__ == '__main__':
     sl.write("🤖 You can chat by entering your queries")
 
     try:
-        knowledge_base = streamlit_llama3.load_knowledgeBase()
-        llm = streamlit_llama3.load_llm()
-        prompt = streamlit_llama3.load_prompt()
+        knowledge_base = load_knowledgeBase()
+        llm = load_llm()
+        prompt = load_prompt()
         logging.info("Components loaded successfully.")
     except Exception as e:
         logging.error(f"Error loading components: {e}")
