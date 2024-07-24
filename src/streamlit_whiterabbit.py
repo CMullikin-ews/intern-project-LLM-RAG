@@ -192,7 +192,7 @@ if __name__=='__main__':
         setup_ollama()
         
         # Creates header for streamlit app and writes to it
-        sl.header("Welcome to the 📝Computer Virus copilot")
+        sl.header("Welcome to the 📝 Computer Virus assistant")
         sl.write("🤖 You can chat by entering your queries")
         
         # Creates and loads all of components for RAG system
@@ -209,6 +209,7 @@ if __name__=='__main__':
                 similar_embeddings=knowledgeBase.similarity_search(query)
                 similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
                 
+                
                 # Defines chain for combining query, documents, prompt, and LLM for generating response
                 retriever = similar_embeddings.as_retriever()
                 rag_chain = (
@@ -220,5 +221,5 @@ if __name__=='__main__':
                 
                 # Calls chain and writes response to streamlit
                 response=rag_chain.invoke(query)
-                sl.write(response)
+                sl.write(similar_embeddings)
                 
