@@ -122,15 +122,16 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     )
     return splitter.split_documents(docs)
 
-def create_knowledge_base():
+def create_knowledgeBase():
     docs = load_documents()
+    os.system("ollama pull mxbai-embed-large")
     chunks = split_text(docs)
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     documents = [Document(page_content=chunk) for chunk in chunks]
-    vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
+    vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings, allow_dangerous_deserialization=True)
     vectorstore.save_local(DB_FAISS_PATH)
 
-def load_knowledge_base():
+def load_knowledgeBase():
     embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
@@ -240,7 +241,7 @@ if __name__ == '__main__':
     st.write("🤖 You can chat by entering your queries")
 
     try:
-        knowledge_base = load_knowledge_base()
+        knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
         logging.info("Components loaded successfully.")
@@ -253,7 +254,7 @@ if __name__ == '__main__':
     if query:
         try:
             similar_embeddings = knowledge_base.similarity_search(query)
-            
+            similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             retriever = similar_embeddings.as_retriever()
             rag_chain = (
                 {"context": retriever | format_docs, "question": RunnablePassthrough()}
