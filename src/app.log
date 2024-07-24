@@ -1,7 +1,7 @@
-2024-07-24 15:58:42,162 - root - INFO - Ollama setup completed successfully.
-2024-07-24 15:58:42,299 - faiss.loader - INFO - Loading faiss with AVX2 support.
-2024-07-24 15:58:42,318 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
-2024-07-24 15:58:42,327 - root - INFO - Components loaded successfully.
-2024-07-24 15:58:46,434 - root - INFO - Ollama setup completed successfully.
-2024-07-24 15:58:46,441 - root - INFO - Components loaded successfully.
-2024-07-24 15:58:47,159 - root - ERROR - Error processing query: Error raised by inference endpoint: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
+2024-07-24 15:59:52,863 - root - INFO - Ollama setup completed successfully.
+2024-07-24 15:59:52,996 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2024-07-24 15:59:53,015 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2024-07-24 15:59:53,024 - root - INFO - Components loaded successfully.
+2024-07-24 15:59:57,126 - root - INFO - Ollama setup completed successfully.
+2024-07-24 15:59:57,133 - root - INFO - Components loaded successfully.
+2024-07-24 15:59:57,870 - root - ERROR - Error processing query: Error raised by inference endpoint: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
