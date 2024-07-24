@@ -122,6 +122,7 @@ def create_directory_loader(file_type, directory_path):
             loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
 def load_documents():
+    txt_file_rename(DATA_PATH)
     file_types = get_file_types(DATA_PATH)
     documents = []
     
@@ -199,8 +200,8 @@ def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
     # As it stands, it assumes `retriever` is a global variable
     retrieved_docs = retriever.invoke(query)
-    sources = [doc.metadata['source'] for doc in retrieved_docs]
-    citation_text = "Sources: " + ", ".join(sources)
+    sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] for doc in retrieved_docs}
+    citation_text = "Documents used: " + ", ".join(sources)
     return f"\n\n{citation_text}"
 
 def extract_text_from_file(file_path):
