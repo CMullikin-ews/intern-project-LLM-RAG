@@ -12,7 +12,7 @@ from langchain_community.llms import Ollama
 from langchain.schema import Document
 import os
 import PyPDF2
-# import docx
+import docx
 import logging
 import random
 import re
@@ -26,7 +26,7 @@ nltk.download('stopwords')
 nltk.download('punkt')
 
 # Define data paths
-DATA_PATH = '../../cyber_data/cyber_data.zip'
+DATA_PATH = '../../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
 
 # File loaders
@@ -54,8 +54,8 @@ def setup_ollama():
     Downloads (if necessary) and runs ollama locally
     """
     try:
-        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        # os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("export OLLAMA_HOST=localhost:8888")
         os.system("sudo service ollama stop")
         cmd = "ollama serve"
         with open(os.devnull, 'wb') as devnull:
