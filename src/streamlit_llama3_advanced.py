@@ -26,7 +26,7 @@ from nltk.tokenize import word_tokenize
 # nltk.download('punkt')
 
 # Define data paths
-DATA_PATH = '../../unprocessed_cyber_data'
+DATA_PATH = '../../cyber_data'
 DB_FAISS_PATH = '../vectorstore'
 
 # File loaders
