@@ -48,8 +48,8 @@ loaders = {
 
 def setup_ollama():
     """Downloads (if necessary) and runs ollama locally."""
-    os.system("curl -fsSL https://ollama.com/install.sh | sh")
-    os.system("export OLLAMA_HOST=localhost:8501")
+    # os.system("curl -fsSL https://ollama.com/install.sh | sh", shell=True, check=True, capture_output=True, text=True)
+    # os.system("export OLLAMA_HOST=localhost:8501")
     os.system("sudo service ollama stop")
     cmd = "ollama serve"
     with open(os.devnull, 'wb') as devnull:
