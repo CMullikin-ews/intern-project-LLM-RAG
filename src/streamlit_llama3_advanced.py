@@ -280,6 +280,7 @@ if __name__ == '__main__':
     if query:
         try:
             similar_embeddings = knowledge_base.similarity_search(query)
+            documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
             similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             retriever = similar_embeddings.as_retriever()
             rag_chain = (
