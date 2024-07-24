@@ -22,8 +22,8 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 # Download NLTK stopwords
-nltk.download('stopwords')
-nltk.download('punkt')
+# nltk.download('stopwords')
+# nltk.download('punkt')
 
 # Define data paths
 DATA_PATH = '../../cyber_data'
