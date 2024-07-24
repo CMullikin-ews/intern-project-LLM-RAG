@@ -204,10 +204,10 @@ def extract_text_from_directory(directory_path):
     return extracted_texts
 
 # Example usage
-directory_path = DATA_PATH
-texts = extract_text_from_directory(directory_path)
-for filename, text in texts.items():
-    print(f"Text from {filename}:\n{text}\n")
+# directory_path = DATA_PATH
+# texts = extract_text_from_directory(directory_path)
+# for filename, text in texts.items():
+#     print(f"Text from {filename}:\n{text}\n")
 
 def extract_metadata(text):
     """Extract metadata from the text."""
