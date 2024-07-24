@@ -263,6 +263,9 @@ if __name__ == '__main__':
     st.header("Welcome to the 📝Computer Virus Copilot")
     st.write("🤖 You can chat by entering your queries")
 
+    if not os.path.exists(DB_FAISS_PATH):
+        create_knowledgeBase()
+
     try:
         knowledge_base = load_knowledgeBase()
         llm = load_llm()
