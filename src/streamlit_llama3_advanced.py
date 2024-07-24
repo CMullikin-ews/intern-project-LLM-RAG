@@ -44,9 +44,9 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     try:
-        # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-        # os.system("export OLLAMA_HOST=localhost:8888")
-        # os.system("sudo service ollama stop")
+        os.system("curl -fsSL https://ollama.com/install.sh | sh")
+        os.system("export OLLAMA_HOST=localhost:8888")
+        os.system("sudo service ollama stop")
         os.system("ollama serve")
         os.system("ollama pull mxbai-embed-large")
         os.system("ollama pull jimscard/whiterabbit-neo")
@@ -168,14 +168,27 @@ def respond_with_url(query: str) -> str:
     citation_text = "Sources: " + ", ".join(sources)
     return f"{response}\n\n{citation_text}"
 
-def extract_text(file_path):
-    """Extract text from the document using textract."""
+def extract_text_from_file(DATA_PATH):
+    """
+    Extracts text from the given file.
+
+    Args:
+        file_path (str): Path to the file
+
+    Returns:
+        str: Extracted text
+    """
     try:
-        text = textract.process(file_path).decode('utf-8')
-        return text
+        text = textract.process(DATA_PATH)
+        return text.decode('utf-8')
     except Exception as e:
-        print(f"Error extracting text from {file_path}: {e}")
-        return None
+        print(f"An error occurred while extracting text: {e}")
+        return ""
+
+# Example usage
+file_path = DATA_PATH
+extracted_text = extract_text_from_file(file_path)
+print(extracted_text)
 
 def extract_metadata(text):
     """Extract metadata from the text."""
