@@ -62,8 +62,18 @@ def setup_ollama():
         process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
 
 # Setup logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filename = 'vector_log.log', filemode = 'w', format='%(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+def pull_vectors_from_store(vectors):
+    # This is a placeholder function. Replace with actual code to pull vectors.
+    vectors = np.random.rand(10, 5)  # Example: 10 vectors of dimension 5
+    return vectors
+
+# Step 3: Log the vectors
+def log_vectors(vectors):
+    for i, vector in enumerate(vectors):
+        logger.info(f"Vector {i}: {vector}")
 
 def txt_file_rename(directory):
     """
