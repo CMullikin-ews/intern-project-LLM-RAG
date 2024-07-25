@@ -2,6 +2,9 @@ import pathlib
 import subprocess
 import docx
 import streamlit as st
+import numpy as np
+from typing import List, Tuple
+from transformers import pipeline
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -209,6 +212,39 @@ def get_relevant_url(query: str) -> str:
         "https://example.com/info4"
     ]
     return random.choice(urls)
+
+# Function to retrieve vectors from FAISS
+def retrieve_vectors(faiss_index, query_vector: np.ndarray, top_k: int) -> List[Tuple[int, np.ndarray]]:
+    distances, indices = faiss_index.search(query_vector, top_k)
+    return [(indices[i], distances[i]) for i in range(top_k)]
+
+# Function to compute relevance scores using an LLM
+def compute_relevance_scores(vectors: List[np.ndarray], query: str, model_name: str = "bert-base-uncased") -> List[float]:
+    llm = pipeline("feature-extraction", model=model_name)
+    query_embedding = llm(query)[0]
+    scores = [np.dot(vector, query_embedding) for vector in vectors]
+    return scores
+
+# Function to rerank vectors
+def rerank_vectors(vectors: List[Tuple[int, np.ndarray]], scores: List[float]) -> List[Tuple[int, np.ndarray, float]]:
+    ranked_vectors = sorted(zip(vectors, scores), key=lambda x: x[1], reverse=True)
+    return [(vec[0], vec[1], score) for vec, score in ranked_vectors]
+
+# Main function to retrieve and rerank vectors
+def retrieve_and_rerank(faiss_index, query_vector: np.ndarray, query: str, top_k: int, model_name: str = "bert-base-uncased"):
+    # Retrieve initial vectors from FAISS
+    retrieved_vectors = retrieve_vectors(faiss_index, query_vector, top_k)
+    
+    # Extract only the vectors for scoring
+    vectors = [vec[1] for vec in retrieved_vectors]
+    
+    # Compute relevance scores using an LLM
+    scores = compute_relevance_scores(vectors, query, model_name)
+    
+    # Rerank vectors based on relevance scores
+    ranked_vectors = rerank_vectors(retrieved_vectors, scores)
+    
+    return ranked_vectors
 
 def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
