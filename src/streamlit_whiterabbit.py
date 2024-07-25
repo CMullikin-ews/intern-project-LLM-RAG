@@ -8,6 +8,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
+from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
+from sentence_transformers import CrossEncoder
 import os
 import subprocess
 
@@ -231,9 +233,11 @@ def load_reranker():
         Returns:
             MixedBread: reranker
         """
-        os.system("export MXBAI_API_KEY=input()")
-        reranker = MixedbreadAIReranker()
-        return reranker
+        # os.system("export MXBAI_API_KEY=input()")
+        # reranker = MixedbreadAIReranker()
+        # return reranker
+        reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
+        return reranker    
 
 # def load_compressor():
 
