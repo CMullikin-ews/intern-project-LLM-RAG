@@ -26,6 +26,7 @@ import nltk
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from mixedbread_ai import MixedBreadAI
 
 # Download NLTK stopwords
 # nltk.download('stopwords')
@@ -235,61 +236,10 @@ def respond_with_sources(query, retriever) -> str:
     citation_text = "Documents used: " + ", ".join(sources)
     return f"\n\n{citation_text}"
 
-def extract_text_from_file(file_path):
-    ext = os.path.splitext(file_path)[1].lower()
-    text = ''
-    
-    if ext == '.txt':
-        with open(file_path, 'r', encoding='utf-8') as file:
-            text = file.read()
-    
-    elif ext == '.pdf':
-        with open(file_path, 'rb') as file:
-            reader = PyPDF2.PdfFileReader(file)
-            for page_num in range(reader.numPages):
-                text += reader.getPage(page_num).extract_text()
-    
-    elif ext == '.docx':
-        doc = docx.Document(file_path)
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + '\n'
-    
-    return text
-
-def extract_text_from_directory(directory_path):
-    extracted_texts = {}
-    
-    for filename in os.listdir(directory_path):
-        file_path = os.path.join(directory_path, filename)
-        if os.path.isfile(file_path):
-            text = extract_text_from_file(file_path)
-            extracted_texts[filename] = text
-    
-    return extracted_texts
-
-def extract_metadata(text):
-    """Extract metadata from the text."""
-    metadata = {}
-    
-    # Extract title (assuming the title is the first line)
-    lines = text.split('\n')
-    metadata['title'] = lines[0] if lines else 'Unknown Title'
-    
-    # Extract author (assuming author is mentioned in the second line)
-    metadata['author'] = lines[1] if len(lines) > 1 else 'Unknown Author'
-    
-    # Extract date (assuming date is mentioned in the third line in a known format)
-    date_line = lines[2] if len(lines) > 2 else ''
-    date_match = re.search(r'\b\d{4}-\d{2}-\d{2}\b', date_line)
-    metadata['date'] = date_match.group(0) if date_match else 'Unknown Date'
-    
-    # Extract keywords (most common non-stopwords)
-    stop_words = set(stopwords.words('english'))
-    words = word_tokenize(text)
-    words = [word.lower() for word in words if word.isalnum() and word.lower() not in stop_words]
-    keywords = [word for word, freq in Counter(words).most_common(10)]
-    metadata['keywords'] = keywords
-    
+def extract_metadata_with_mixedbreadai(text: str) -> dict:
+    """Extract metadata using MixedBreadAI."""
+    mixedbread_ai = MixedBreadAI()
+    metadata = mixedbread_ai.extract_metadata(text)
     return metadata
 
 if __name__ == '__main__':
