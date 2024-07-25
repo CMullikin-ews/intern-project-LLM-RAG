@@ -10,7 +10,9 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
 from sentence_transformers import CrossEncoder
+from langchain.retrievers.document_compressors import LLMChainExtractor
 import os
+import pathlib
 import subprocess
 
 # Location of the documents for the vector store and location of the vector store
@@ -239,8 +241,6 @@ def load_reranker():
         reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
         return reranker    
 
-# def load_compressor():
-
 def format_docs(docs):
         """
         Joins documents retrieved from vector store in one line format to make it easier for LLM to parse
@@ -263,6 +263,18 @@ def format_docs(docs):
                 ranked_docs_content.append(str(ranked_doc.get('text')))
         
         return "\n\n".join(ranked_docs_content)
+
+def load_compressor():
+        """
+        Creates and returns contextual compressor using LLM which reduces size of documents from vector store
+
+        Returns:
+            LLMChainExtractor: contextual compressor
+        """
+        llm = load_llm()
+        compressor = LLMChainExtractor.from_llm(llm)
+        return compressor
+
 
 def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
@@ -298,10 +310,12 @@ if __name__=='__main__':
                 
                 # Defines retriever for getting vectors from vector store
                 retriever = similar_embeddings.as_retriever()
+                compressor = load_compressor()
+                compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
                 
                 # Chain that combines query, documents, prompt, and LLM to form process for generating response
                 rag_chain = (
-                        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                        {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
                         | prompt
                         | llm
                         | StrOutputParser()
