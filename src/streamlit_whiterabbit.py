@@ -256,9 +256,9 @@ def format_docs(docs):
         docs_content = []
         for doc in docs:
                 docs_content.append(str(doc.page_content))
-        print(docs_content)
-        print(type(docs_content[0]))
         ranked_docs = reranker.rank(query, docs_content, return_documents=True)
+        print(ranked_docs)
+        print(type(ranked_docs[0]))
         return "\n\n".join(ranked_docs)
 
 def respond_with_sources(query, retriever) -> str:
