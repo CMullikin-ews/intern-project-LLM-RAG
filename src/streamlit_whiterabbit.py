@@ -164,7 +164,7 @@ def create_knowledgeBase(directory, vectorstore):
     embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
     if os.path.exists(DB_FAISS_PATH + '/index.faiss'):
-        old_vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_serialization=True)
+        old_vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         old_vectorstore.merge_from(DB_FAISS_PATH)
         old_vectorstore.save_local(DB_FAISS_PATH)
     else:
@@ -193,7 +193,7 @@ def load_knowledgeBase():
         """
         os.system("ollama pull mxbai-embed-large")
         embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_serialization=True)
+        db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
         return db
         
 def load_llm():
