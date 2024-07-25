@@ -182,11 +182,11 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     )
     return splitter.split_documents(docs)
 
-def create_knowledgeBase(directory):
+def create_knowledgeBase(directory, vectorstore):
     """
     Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
     """
-    documents = load_documents()
+    documents = load_documents(directory)
     os.system("ollama pull mxbai-embed-large")
     embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
