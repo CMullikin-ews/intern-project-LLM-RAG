@@ -252,10 +252,9 @@ def format_docs(docs):
             String: documents in one line
         """
         reranker = load_reranker()
-        print(docs)
-        page_content = [doc.page_content for doc in docs]
-        docs = reranker.rank(query, page_content, return_documents=True)
-        return "\n\n".join(docs)
+        docs_content = [doc.page_content for doc in docs]
+        ranked_docs = reranker.rank(query, docs_content, return_documents=True)
+        return "\n\n".join(ranked_docs)
 
 def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
