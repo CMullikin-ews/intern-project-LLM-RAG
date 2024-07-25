@@ -252,12 +252,12 @@ def format_docs(docs):
             String: documents in one line
         """
         reranker = load_reranker()
-        docs = reranker.rank(query, docs, return_documents=True)
+        print(docs)
+        docs = reranker.rank(query, docs.page_content, return_documents=True)
         return "\n\n".join(doc.page_content for doc in docs)
 
 def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
-    # As it stands, it assumes `retriever` is a global variable
     retrieved_docs = retriever.invoke(query)
     sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] for doc in retrieved_docs}
     citation_text = "Documents used: " + ", ".join(sources)
