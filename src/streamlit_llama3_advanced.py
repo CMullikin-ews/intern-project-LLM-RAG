@@ -246,11 +246,11 @@ def respond_with_sources(query, retriever) -> str:
     citation_text = "Documents used: " + ", ".join(sources)
     return f"\n\n{citation_text}"
 
-def extract_metadata_with_mixedbreadai(text: str) -> dict:
-    """Extract metadata using MixedBreadAI."""
-    mixedbread_ai = MixedBreadAI()
-    metadata = mixedbread_ai.extract_metadata(text)
-    return metadata
+# def extract_metadata_with_mixedbreadai(text: str) -> dict:
+#     """Extract metadata using MixedBreadAI."""
+#     mixedbread_ai = MixedBreadAI()
+#     metadata = mixedbread_ai.extract_metadata(text)
+#     return metadata
 
 if __name__ == '__main__':
     setup_ollama()
