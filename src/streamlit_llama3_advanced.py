@@ -192,7 +192,9 @@ def load_knowledgeBase():
     return db
 
 def load_llm():
-    return Ollama(model="llama3")
+    os.system("ollama pull llama3")
+    llm = Ollama(model="llama3")
+    return llm
 
 def load_prompt():
     prompt = """
