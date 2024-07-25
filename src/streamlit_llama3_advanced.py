@@ -23,8 +23,8 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 # Download NLTK stopwords
-nltk.download('stopwords')
-nltk.download('punkt')
+# nltk.download('stopwords')
+# nltk.download('punkt')
 
 # Define data paths
 DATA_PATH = '../../processed_cyber_data'
@@ -161,6 +161,14 @@ def create_knowledgeBase(directory):
         old_vectorstore.save_local(DB_FAISS_PATH)
     else:
         vectorstore.save_local(DB_FAISS_PATH)
+
+def move_files(directory):
+    file_paths = pathlib.Path(directory).glob('*.txt')
+    new_path = '../../processed_cyber_data'
+    for file_path in file_paths:
+        file_name = os.path.basename(file_path)
+        file_ext = os.path.splitext(file_name)[1]
+        os.replace(file_path, new_path+file_name+file_ext)
 
 def load_knowledgeBase():
     os.system("ollama pull mxbai-embed-large")
