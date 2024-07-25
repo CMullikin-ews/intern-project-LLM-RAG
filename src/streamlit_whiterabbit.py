@@ -253,6 +253,7 @@ def format_docs(docs):
         """
         reranker = load_reranker()
         docs_content = [doc.page_content for doc in docs]
+        print(docs_content)
         ranked_docs = reranker.rank(query, docs_content, return_documents=True)
         return "\n\n".join(ranked_docs)
 
