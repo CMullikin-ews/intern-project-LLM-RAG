@@ -210,7 +210,6 @@ def load_llm():
         llm = Ollama(model="llama3")
         return llm
 
-#creating prompt template using langchain
 def load_prompt():
         """
         Creates and returns prompt for LLM query that specifies how response sounds and structure of response
@@ -218,9 +217,12 @@ def load_prompt():
         Returns:
             ChatPromptTemplate: Prompt for LLM
         """
-        prompt = """
-        You are an assistant for helping software developers to detect and neutralize viruses.
-        If the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this"
+        prompt = """You need to answer the question in the sentence as same as in the content.
+        Cite the sources of any data provided.
+        Given below is the context and question of the user.
+        context = {context}
+        question = {question}
+        if the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this."
         """
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
@@ -250,11 +252,19 @@ def format_docs(docs):
         """
         return "\n\n".join(doc.page_content for doc in docs)
 
+def respond_with_sources(query, retriever) -> str:
+    # This function should be updated as per your logic to retrieve documents
+    # As it stands, it assumes `retriever` is a global variable
+    retrieved_docs = retriever.invoke(query)
+    sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] for doc in retrieved_docs}
+    citation_text = "Documents used: " + ", ".join(sources)
+    return f"\n\n{citation_text}"
+
 if __name__=='__main__':
         setup_ollama()
         
         # Creates header for streamlit app and writes to it
-        sl.header("Welcome to the 📝Computer Virus copilot")
+        sl.header("Welcome to the 📝 Computer Virus assistant")
         sl.write("🤖 You can chat by entering your queries")
         
         # Creates and loads all of components for RAG system
@@ -282,14 +292,13 @@ if __name__=='__main__':
                 
                 # Chain that combines query, documents, prompt, and LLM to form process for generating response
                 rag_chain = (
-                        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                        {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
                         | prompt
                         | llm
                         | StrOutputParser()
                     )
                 
                 # Calls chain and writes response to streamlit
-                response=rag_chain.invoke(query)
+                response=rag_chain.invoke(query) + respond_with_sources(query, retriever)
                 sl.write(response)
                 
-        
