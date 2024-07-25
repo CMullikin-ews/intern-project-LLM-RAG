@@ -256,8 +256,8 @@ def format_docs(docs):
         docs_content = []
         for doc in docs:
                 docs_content.append(str(doc.page_content))
-                print(doc.page_content)
         print(docs_content)
+        print(type(docs_content[0]))
         ranked_docs = reranker.rank(query, docs_content, return_documents=True)
         return "\n\n".join(ranked_docs)
 
