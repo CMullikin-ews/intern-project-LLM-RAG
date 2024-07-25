@@ -8,7 +8,10 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
+from langchain_mixedbread_ai import MixedbreadAIReranker
+from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
 import os
+import pathlib
 import subprocess
 
 # Location of the documents for the vector store and location of the vector store
@@ -42,6 +45,33 @@ def setup_ollama():
         cmd = "ollama serve"
         with open(os.devnull, 'wb') as devnull:
                 process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+
+def txt_file_rename(directory):
+    """
+    Takes .txt files and renames them if they have a line containing title in them
+
+    Args:
+        directory (str): path to directory where files are stored
+    """
+    file_paths = pathlib.Path(directory).glob('*.txt')
+    for file_path in file_paths:
+        file_name = os.path.basename(file_path)
+        file_ext = os.path.splitext(file_name)[1]
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line in file:
+                segments = line.split(':')
+                if 'title' in segments[0].lower() and len(segments) >= 2:
+                    name = segments[1].strip()
+                    new_file_name = os.path.join(directory, name + file_ext)
+                    try:
+                        os.rename(file_path, new_file_name)
+                        print(f'Renamed {file_name} to {name}')
+                    except FileNotFoundError:
+                        print(f"FileNotFoundError: {file_path} not found.")
+                    except PermissionError:
+                        print("Permission denied: You don't have the necessary permissions to change the permissions of this file.")
+                    except NotADirectoryError:
+                        print(f"Not a directory: {new_file_name}")
 
 def get_file_types(directory):
         """
@@ -124,16 +154,38 @@ def split_text(docs, chunk_size=512, chunk_overlap=50):
         chunks = splitter.split_documents(docs)
         return chunks
 
-def create_knowledgeBase():
-        """
-        Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
-        """
-        
-        documents = load_documents()
-        os.system("ollama pull mxbai-embed-large")
-        embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
-        vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings, allow_dangerous_deserialization=True)
+def create_knowledgeBase(directory, vectorstore):
+    """
+    Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
+    
+    Parameters:
+        directory (str): The input text to be split.
+        vectorstore (FAISS):
+    """
+    documents = load_documents(directory)
+    os.system("ollama pull mxbai-embed-large")
+    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
+    if os.path.exists(DB_FAISS_PATH + '/index.faiss'):
+        old_vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings)
+        old_vectorstore.merge_from(DB_FAISS_PATH)
+        old_vectorstore.save_local(DB_FAISS_PATH)
+    else:
         vectorstore.save_local(DB_FAISS_PATH)
+
+def move_files(directory):
+    """
+    Moves files from unprocessed data directory to processed data directory
+    
+    Parameters:
+        directory (str): The input text to be split.
+    """
+    file_paths = pathlib.Path(directory).iterdir()
+    for file_path in file_paths:
+        new_path = '../../processed_cyber_data/'
+        file_name = os.path.basename(file_path)
+        new_path += file_name
+        os.replace(file_path, new_path)
 
 def load_knowledgeBase():
         """
@@ -173,6 +225,19 @@ def load_prompt():
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
 
+def load_reranker():
+        """
+        Creates and returns MixedBread reranker algorithm
+
+        Returns:
+            MixedBread: reranker
+        """
+        os.system("export MXBAI_API_KEY=input()")
+        reranker = MixedbreadAIReranker()
+        return reranker
+
+# def load_compressor():
+
 def format_docs(docs):
         """
         Joins documents retrieved from vector store in one line format to make it easier for LLM to parse
@@ -193,7 +258,11 @@ if __name__=='__main__':
         sl.write("🤖 You can chat by entering your queries")
         
         # Creates and loads all of components for RAG system
+        # txt_file_rename(DATA_PATH)
         # create_knowledgeBase()
+        # move_files(DATA_PATH)
+        # create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+        
         knowledgeBase=load_knowledgeBase()
         llm=load_llm()
         prompt=load_prompt()
@@ -206,8 +275,12 @@ if __name__=='__main__':
                 similar_embeddings=knowledgeBase.similarity_search(query)
                 similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
                 
-                # Defines chain together query, documents, prompt, and LLM to form process for generating response
+                # Defines retriever for getting vectors from vector store and reranker for ordering vectors by relevance to query
                 retriever = similar_embeddings.as_retriever()
+                reranker = load_reranker()
+                compression_retriever = ContextualCompressionRetriever(base_compressor=reranker, base_retriever=retriever)
+                
+                # Chain that combines query, documents, prompt, and LLM to form process for generating response
                 rag_chain = (
                         {"context": retriever | format_docs, "question": RunnablePassthrough()}
                         | prompt
@@ -219,3 +292,4 @@ if __name__=='__main__':
                 response=rag_chain.invoke(query)
                 sl.write(response)
                 
+        
