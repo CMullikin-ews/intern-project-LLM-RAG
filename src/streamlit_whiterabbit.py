@@ -260,7 +260,7 @@ def format_docs(docs):
         
         ranked_docs_content = []
         for ranked_doc in ranked_docs:
-                ranked_docs_content.append(str(ranked_doc.text))
+                ranked_docs_content.append(str(ranked_doc.get('text')))
         return "\n\n".join(ranked_docs)
 
 def respond_with_sources(query, retriever) -> str:
