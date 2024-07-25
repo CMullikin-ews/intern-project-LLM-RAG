@@ -256,12 +256,13 @@ def format_docs(docs):
         docs_content = []
         for doc in docs:
                 docs_content.append(str(doc.page_content))
+                
         ranked_docs = reranker.rank(query, docs_content, return_documents=True)
-        
         ranked_docs_content = []
         for ranked_doc in ranked_docs:
                 ranked_docs_content.append(str(ranked_doc.get('text')))
-        return "\n\n".join(ranked_docs)
+        
+        return "\n\n".join(ranked_docs_content)
 
 def respond_with_sources(query, retriever) -> str:
     # This function should be updated as per your logic to retrieve documents
