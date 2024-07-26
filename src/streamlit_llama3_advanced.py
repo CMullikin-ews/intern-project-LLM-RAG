@@ -1,7 +1,6 @@
 import pathlib
 import subprocess
 import streamlit as st
-from mixedbread_ai_haystack.rerankers import MixedbreadAIReranker
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
