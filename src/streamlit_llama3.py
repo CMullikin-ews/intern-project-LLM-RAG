@@ -9,6 +9,9 @@ from langchain_community.llms import Ollama
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
+from sentence_transformers.cross_encoder import CrossEncoder
+from langchain.retrievers.document_compressors import LLMChainExtractor
 from langchain.schema import Document
 import random
 
@@ -45,6 +48,7 @@ def load_knowledgeBase():
     return db
 
 def load_llm():
+    os.system("ollama pull llama3")
     llm = Ollama(model="llama3")
     return llm
 
@@ -58,6 +62,16 @@ def load_prompt():
     """
     prompt = ChatPromptTemplate.from_template(prompt)
     return prompt
+
+def load_reranker():
+        """
+        Creates and returns MixedBread reranker algorithm
+
+        Returns:
+            MixedBread: reranker
+        """
+        reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
+        return reranker    
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
