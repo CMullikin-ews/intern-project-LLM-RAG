@@ -297,45 +297,43 @@ if __name__=='__main__':
         sl.header("Welcome to the 📝 Computer Virus assistant")
         sl.write("🤖 You can chat by entering your queries")
         
-        # Creates vector store using any unprocessed files
-        txt_file_rename(DATA_PATH)
-        create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
-        move_files(DATA_PATH)
-        
-        # Loads in vector store, LLM, and prompt
-        knowledge_base = load_knowledgeBase()
-        llm = load_llm()
-        prompt = load_prompt()
-        logger.info("Components loaded successfully.")
-        
-        # Creates text box for user to query data
-        query=sl.text_input('Enter some text')
-        
-        if(query):
-                # Gets most similar vectors from knowledge base to user query and turns into actual documents
-                similar_embeddings=knowledge_base.similarity_search(query)
-                similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+        try:
+                #Creates vector store using any unprocessed files
+                txt_file_rename(DATA_PATH)
+                create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+                move_files(DATA_PATH)
                 
-                # Defines retriever for getting vectors from vector store
-                retriever = similar_embeddings.as_retriever()
-                compressor = load_compressor()
-                compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
+                # Loads in vector store, LLM, and prompt
+                knowledge_base = load_knowledgeBase()
+                llm = load_llm()
+                prompt = load_prompt()
+                logger.info("Components loaded successfully.")
                 
-                # Chain that combines query, vectors, prompt, and LLM to generate response
-                rag_chain = (
-                        {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
-                        | prompt
-                        | llm
-                        | StrOutputParser()
-                    )
+                # Creates text box for user to query data
+                query=sl.text_input('Enter some text')
                 
-                # Calls chain and writes response to streamlit
-                response=rag_chain.invoke(query) + respond_with_sources(query, retriever)
-                sl.write(response)
+                if(query):
+                        # Gets most similar vectors from knowledge base to user query and turns into actual documents
+                        similar_embeddings=knowledge_base.similarity_search(query)
+                        similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+                        
+                        # Defines retriever for getting vectors from vector store
+                        retriever = similar_embeddings.as_retriever()
+                        compressor = load_compressor()
+                        compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
+                        
+                        # Chain that combines query, vectors, prompt, and LLM to generate response
+                        rag_chain = (
+                                {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
+                                | prompt
+                                | llm
+                                | StrOutputParser()
+                            )
+                        
+                        # Calls chain and writes response to streamlit
+                        response=rag_chain.invoke(query) + respond_with_sources(query, retriever)
+                        sl.write(response)
         
-        # try:
-            
-        
-        # except Exception as e:
-        #     logger.error(f"Error loading components: {e}")
-        #     sl.write("An error occurred while loading the components. Please check the logs.")
+        except Exception as e:
+            logger.error(f"Error loading components: {e}")
+            sl.write("An error occurred while loading the components. Please check the logs.")
