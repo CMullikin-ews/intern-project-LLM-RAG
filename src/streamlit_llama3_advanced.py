@@ -1,6 +1,7 @@
 import pathlib
 import subprocess
 import streamlit as st
+from mixedbread_ai_haystack.rerankers import MixedbreadAIReranker
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
@@ -38,13 +39,11 @@ loaders = {
 }
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, filename = 'vector_log.log', filemode = 'w', format='%(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, filename='vector_log.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def setup_ollama():
     """Downloads (if necessary) and runs ollama locally."""
-    # os.system("curl -fsSL https://ollama.com/install.sh | sh")
-    # os.system("export OLLAMA_HOST=localhost:8501")
     os.system("sudo service ollama stop")
     cmd = "ollama serve"
     with open(os.devnull, 'wb') as devnull:
@@ -70,13 +69,22 @@ def txt_file_rename(directory):
                     try:
                         print(f'Renamed {file_name} to {name}')
                         os.rename(file_path, new_file_name)
-                        # print(f'Renamed {file_name} to {name}')
                     except FileNotFoundError:
                         print(f"FileNotFoundError: {file_path} not found.")
                     except PermissionError:
                         print("Permission denied: You don't have the necessary permissions to change the permissions of this file.")
                     except NotADirectoryError:
                         print(f"Not a directory: {new_file_name}")
+
+def load_reranker():
+    """
+    Creates and returns MixedBread reranker algorithm
+
+    Returns:
+        MixedBread: reranker
+    """
+    reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
+    return reranker   
 
 def get_file_types(directory):
     file_types = set()
@@ -108,7 +116,7 @@ def create_directory_loader(file_type, directory_path):
             glob=f"**/*{file_type}",
             loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
-def load_documents(DATA_PATH):
+def load_documents():
     file_types = get_file_types(DATA_PATH)
     documents = []
     
@@ -137,17 +145,17 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     chunks = splitter.split_documents(docs)
     return chunks
 
-def create_knowledgeBase(directory, vectorstore):
+def create_knowledgeBase(directory):
     """
     Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
     """
     documents = load_documents(directory)
     os.system("ollama pull mxbai-embed-large")
-    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
     if os.path.exists(DB_FAISS_PATH + '/index.faiss'):
         old_vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings)
-        old_vectorstore.merge_from(DB_FAISS_PATH)
+        old_vectorstore.merge_from(vectorstore)
         old_vectorstore.save_local(DB_FAISS_PATH)
     else:
         vectorstore.save_local(DB_FAISS_PATH)
@@ -163,7 +171,7 @@ def move_files(directory):
 
 def load_knowledgeBase():
     os.system("ollama pull mxbai-embed-large")
-    embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
+    embeddings = OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
 
@@ -182,43 +190,28 @@ def load_prompt():
     """
     return ChatPromptTemplate.from_template(prompt)
 
-def load_reranker():
-        """
-        Creates and returns MixedBread reranker algorithm
-
-        Returns:
-            MixedBread: reranker
-        """
-        reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
-        return reranker    
-
-
 def format_docs(docs):
-        reranker = load_reranker()
-        
-        docs_content = []
-        for doc in docs:
-            logger.info(doc)
-            docs_content.append(str(doc.page_content))
-                
-        ranked_docs = reranker.rank(query, docs_content, return_documents=True)
-        ranked_docs_content = []
-        for ranked_doc in ranked_docs:
-            ranked_docs_content.append(str(ranked_doc.get('text')))
-
-        return "\n\n".join(doc.page_content for doc in docs)
+    reranker = load_reranker()
+    docs_content = []
+    for doc in docs:
+        logger.info(doc)
+        docs_content.append(str(doc.page_content))
+    ranked_docs = reranker.rank(query, docs_content, return_documents=True)
+    ranked_docs_content = []
+    for ranked_doc in ranked_docs:
+        ranked_docs_content.append(str(ranked_doc.get('text')))
+    return "\n\n".join(doc.page_content for doc in docs)
 
 def load_compressor():
-        """
-        Creates and returns contextual compressor using LLM which reduces size of documents from vector store
+    """
+    Creates and returns contextual compressor using LLM which reduces size of documents from vector store
 
-        Returns:
-            LLMChainExtractor: contextual compressor
-        """
-        llm = load_llm()
-        compressor = LLMChainExtractor.from_llm(llm)
-        return compressor
-
+    Returns:
+        LLMChainExtractor: contextual compressor
+    """
+    llm = load_llm()
+    compressor = LLMChainExtractor.from_llm(llm)
+    return compressor
 
 def generate_response(query: str) -> str:
     responses = [
@@ -252,15 +245,14 @@ if __name__ == '__main__':
     st.write("🤖 You can chat by entering your queries")
 
     if not os.path.exists(DB_FAISS_PATH):
-        create_knowledgeBase()
+        create_knowledgeBase(DATA_PATH)
 
     try:
         # Creates vector store using any unprocessed files
         txt_file_rename(DATA_PATH)
-        create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+        create_knowledgeBase(DATA_PATH)
         move_files(DATA_PATH)
-            
-
+        
         knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
@@ -275,7 +267,7 @@ if __name__ == '__main__':
         try:
             similar_embeddings = knowledge_base.similarity_search(query)
             documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
-            similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+            similar_embeddings = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             retriever = similar_embeddings.as_retriever()
             compressor = load_compressor()
             compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)

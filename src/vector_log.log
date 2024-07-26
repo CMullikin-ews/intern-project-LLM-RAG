@@ -1,1 +1,2 @@
-root - ERROR - Error loading components: load_documents() takes 0 positional arguments but 1 was given
+root - ERROR - Error loading components: [Errno 2] No such file or directory: '../../processed_cyber_data'
+root - ERROR - Error loading components: [Errno 2] No such file or directory: '../../processed_cyber_data'
