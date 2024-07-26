@@ -12,6 +12,7 @@ from langchain.retrievers.contextual_compression import ContextualCompressionRet
 from sentence_transformers import CrossEncoder
 from langchain.retrievers.document_compressors import LLMChainExtractor
 from langchain_community.document_transformers import DoctranPropertyExtractor
+import logging
 import os
 import pathlib
 import subprocess
