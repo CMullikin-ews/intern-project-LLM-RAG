@@ -1,7 +1,6 @@
 import pathlib
 import subprocess
 import streamlit as st
-import numpy as np
 from mixedbread_ai_haystack.rerankers import MixedbreadAIReranker
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -12,18 +11,12 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
-from sentence_transformers import CrossEncoder
+from sentence_transformers.cross_encoder import CrossEncoder
 from langchain.retrievers.document_compressors import LLMChainExtractor
-from langchain_community.document_transformers import DoctranPropertyExtractor
 from langchain.schema import Document
 import os
-import docx
 import logging
 import random
-
-# Download NLTK stopwords
-# nltk.download('stopwords')
-# nltk.download('punkt')
 
 # Define data paths
 DATA_PATH = '../../processed_cyber_data'
@@ -93,9 +86,8 @@ def load_reranker():
         Returns:
             MixedBread: reranker
         """
-        os.system("export MXBAI_API_KEY=input()")
-        reranker = MixedbreadAIReranker()
-        return reranker
+        reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
+        return reranker   
 
 def get_file_types(directory):
     file_types = set()
