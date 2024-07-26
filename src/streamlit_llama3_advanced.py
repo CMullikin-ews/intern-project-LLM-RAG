@@ -11,6 +11,10 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
+from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
+from sentence_transformers import CrossEncoder
+from langchain.retrievers.document_compressors import LLMChainExtractor
+from langchain_community.document_transformers import DoctranPropertyExtractor
 from langchain.schema import Document
 import os
 import docx
