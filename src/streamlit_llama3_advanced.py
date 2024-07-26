@@ -254,9 +254,6 @@ if __name__ == '__main__':
     st.header("Welcome to the 📝Computer Virus Copilot")
     st.write("🤖 You can chat by entering your queries")
 
-    if not os.path.exists(DB_FAISS_PATH):
-        create_knowledgeBase(DATA_PATH)
-
     try:
         # Creates vector store using any unprocessed files
         txt_file_rename(DATA_PATH)
