@@ -108,7 +108,7 @@ def create_directory_loader(file_type, directory_path):
             glob=f"**/*{file_type}",
             loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
-def load_documents():
+def load_documents(DATA_PATH):
     file_types = get_file_types(DATA_PATH)
     documents = []
     
