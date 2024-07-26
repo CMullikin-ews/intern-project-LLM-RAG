@@ -138,7 +138,7 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     chunks = splitter.split_documents(docs)
     return chunks
 
-def create_knowledgeBase(directory):
+def create_knowledgeBase(directory, vectorstore):
     """
     Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
     """
