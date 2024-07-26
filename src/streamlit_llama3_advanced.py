@@ -18,10 +18,6 @@ import os
 import logging
 import random
 
-# Define data paths
-DATA_PATH = '../../processed_cyber_data'
-DB_FAISS_PATH = '../vectorstore'
-
 # File loaders
 loaders = {
     '.php': UnstructuredFileLoader,
