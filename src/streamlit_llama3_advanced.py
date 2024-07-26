@@ -38,6 +38,10 @@ loaders = {
     '.json': JSONLoader
 }
 
+# Setup logging
+logging.basicConfig(level=logging.INFO, filename = 'vector_log.log', filemode = 'w', format='%(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 def setup_ollama():
     """Downloads (if necessary) and runs ollama locally."""
     # os.system("curl -fsSL https://ollama.com/install.sh | sh")
@@ -46,10 +50,6 @@ def setup_ollama():
     cmd = "ollama serve"
     with open(os.devnull, 'wb') as devnull:
         process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
-
-# Setup logging
-logging.basicConfig(level=logging.INFO, filename = 'vector_log.log', filemode = 'w', format='%(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 def txt_file_rename(directory):
     """
@@ -78,16 +78,6 @@ def txt_file_rename(directory):
                         print("Permission denied: You don't have the necessary permissions to change the permissions of this file.")
                     except NotADirectoryError:
                         print(f"Not a directory: {new_file_name}")
-
-def load_reranker():
-        """
-        Creates and returns MixedBread reranker algorithm
-
-        Returns:
-            MixedBread: reranker
-        """
-        reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
-        return reranker   
 
 def get_file_types(directory):
     file_types = set()
@@ -120,7 +110,6 @@ def create_directory_loader(file_type, directory_path):
             loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
 def load_documents():
-    txt_file_rename(DATA_PATH)
     file_types = get_file_types(DATA_PATH)
     documents = []
     
@@ -146,9 +135,10 @@ def split_text(docs, max_length=512, chunk_overlap=50):
         chunk_size=max_length,
         chunk_overlap=chunk_overlap
     )
-    return splitter.split_documents(docs)
+    chunks = splitter.split_documents(docs)
+    return chunks
 
-def create_knowledgeBase(directory, vectorstore):
+def create_knowledgeBase(directory):
     """
     Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
     """
@@ -167,9 +157,10 @@ def move_files(directory):
     file_paths = pathlib.Path(directory).glob('*.txt')
     new_path = '../../processed_cyber_data'
     for file_path in file_paths:
+        new_path = '../../processed_cyber_data/'
         file_name = os.path.basename(file_path)
-        file_ext = os.path.splitext(file_name)[1]
-        os.replace(file_path, new_path+file_name+file_ext)
+        new_path += file_name
+        os.replace(file_path, new_path)
 
 def load_knowledgeBase():
     os.system("ollama pull mxbai-embed-large")
@@ -199,9 +190,8 @@ def load_reranker():
         Returns:
             MixedBread: reranker
         """
-        os.system("export MXBAI_API_KEY=input()")
-        reranker = MixedbreadAIReranker()
-        return reranker
+        reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
+        return reranker    
 
 
 def format_docs(docs):

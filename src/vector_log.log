@@ -1,1 +1,4 @@
 root - ERROR - Error loading components: load_documents() takes 0 positional arguments but 1 was given
+root - ERROR - Error loading components: load_documents() takes 0 positional arguments but 1 was given
+root - ERROR - Error processing query: name 'knowledge_base' is not defined
+root - ERROR - Error loading components: load_documents() takes 0 positional arguments but 1 was given
