@@ -255,7 +255,7 @@ def format_docs(docs):
         
         docs_content = []
         for doc in docs:
-                logger.info(doc)
+                logger.info(f"Document used in {query}: {doc}")
                 docs_content.append(str(doc.page_content))
                 
         ranked_docs = reranker.rank(query, docs_content, return_documents=True)
