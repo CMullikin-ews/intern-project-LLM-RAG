@@ -284,6 +284,7 @@ def respond_with_sources(query, retriever) -> str:
     return f"\n\n{citation_text}"
 
 if __name__=='__main__':
+        #Pulls and serves ollama for models used later on
         setup_ollama()
         
         # Location of the documents for the vector store and location of the vector store
@@ -295,20 +296,16 @@ if __name__=='__main__':
         sl.header("Welcome to the 📝 Computer Virus assistant")
         sl.write("🤖 You can chat by entering your queries")
         
-        try:
-            # Creates vector store using any unprocessed files
-            txt_file_rename(DATA_PATH)
-            create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
-            move_files(DATA_PATH)
-            
-            # Loads in vector store, LLM, and prompt
-            knowledge_base = load_knowledgeBase()
-            llm = load_llm()
-            prompt = load_prompt()
-            logger.info("Components loaded successfully.")
-        except Exception as e:
-            logger.error(f"Error loading components: {e}")
-            sl.write("An error occurred while loading the components. Please check the logs.")
+        # Creates vector store using any unprocessed files
+        txt_file_rename(DATA_PATH)
+        create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+        move_files(DATA_PATH)
+        
+        # Loads in vector store, LLM, and prompt
+        knowledge_base = load_knowledgeBase()
+        llm = load_llm()
+        prompt = load_prompt()
+        logger.info("Components loaded successfully.")
         
         # Creates text box for user to query data
         query=sl.text_input('Enter some text')
@@ -334,3 +331,10 @@ if __name__=='__main__':
                 # Calls chain and writes response to streamlit
                 response=rag_chain.invoke(query) + respond_with_sources(query, retriever)
                 sl.write(response)
+        
+        # try:
+            
+        
+        # except Exception as e:
+        #     logger.error(f"Error loading components: {e}")
+        #     sl.write("An error occurred while loading the components. Please check the logs.")

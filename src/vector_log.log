@@ -1,2 +1,6 @@
-__main__ - ERROR - Error loading components: load_documents() takes 0 positional arguments but 1 was given
-__main__ - ERROR - Error loading components: load_documents() takes 0 positional arguments but 1 was given
+faiss.loader - INFO - Loading faiss with AVX2 support.
+faiss.loader - INFO - Could not load library with AVX2 support due to:
+ModuleNotFoundError("No module named 'faiss.swigfaiss_avx2'")
+faiss.loader - INFO - Loading faiss.
+faiss.loader - INFO - Successfully loaded faiss.
+__main__ - ERROR - Error loading components: list index out of range
