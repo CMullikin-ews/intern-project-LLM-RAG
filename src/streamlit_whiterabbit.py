@@ -17,10 +17,6 @@ import os
 import pathlib
 import subprocess
 
-# Location of the documents for the vector store and location of the vector store
-DATA_PATH = '../../unprocessed_cyber_data'
-DB_FAISS_PATH = '../vectorstore'
-
 # Specified loader for each type of file found in the cyber data directory (so far)
 loaders = {
     '.php': UnstructuredFileLoader,
@@ -115,27 +111,27 @@ def create_directory_loader(file_type, directory_path):
         loader_cls=loaders.get(file_type, UnstructuredFileLoader)
 )
 
-def load_documents():
+def load_documents(directory):
         """
         Loads in files from ../data directory and returns them
 
         Returns:
                 List[Document]: Array of documents
         """
-        file_types = get_file_types(DATA_PATH)
+        file_types = get_file_types(directory)
         documents = []
         
         for file_type in file_types:
                 if file_type.strip() != "":
                         if file_type == '.json':
-                                loader_list = create_directory_loader(file_type, DATA_PATH)
+                                loader_list = create_directory_loader(file_type, directory)
                                 for loader in loader_list:
                                         docs = loader.load()
                                         chunks = split_text(docs)
                                         if chunks != None and chunks != "" and len(chunks) > 0:
                                                 documents.extend(chunks)
                         else:        
-                                loader = create_directory_loader(file_type, DATA_PATH)
+                                loader = create_directory_loader(file_type, directory)
                                 docs = loader.load()
                                 chunks = split_text(docs)
                                 if chunks != None and chunks != "" and len(chunks) > 0:
@@ -289,6 +285,11 @@ def respond_with_sources(query, retriever) -> str:
 
 if __name__=='__main__':
         setup_ollama()
+        
+        # Location of the documents for the vector store and location of the vector store
+        DATA_PATH = '../../unprocessed_cyber_data'
+        DB_FAISS_PATH = '../vectorstore'
+
         
         # Creates header for streamlit app and writes to it
         sl.header("Welcome to the 📝 Computer Virus assistant")
