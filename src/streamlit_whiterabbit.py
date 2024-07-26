@@ -255,7 +255,7 @@ def format_docs(docs):
         
         docs_content = []
         for doc in docs:
-                logger.info(f"Document used in {query}: {doc}\n")
+                logger.info(f"\nDocument used in {query}: {doc}")
                 docs_content.append(str(doc.page_content))
                 
         ranked_docs = reranker.rank(query, docs_content, return_documents=True)
@@ -307,7 +307,7 @@ if __name__=='__main__':
                 knowledge_base = load_knowledgeBase()
                 llm = load_llm()
                 prompt = load_prompt()
-                logger.info("Components loaded successfully.\n")
+                logger.info("Components loaded successfully.")
                 
                 # Creates text box for user to query data
                 query=sl.text_input('Enter some text')
@@ -335,5 +335,5 @@ if __name__=='__main__':
                         sl.write(response)
         
         except Exception as e:
-            logger.error(f"Error loading components: {e}\n")
+            logger.error(f"\nError loading components: {e}")
             sl.write("An error occurred while loading the components. Please check the logs.")
