@@ -11,6 +11,7 @@ from langchain_community.llms import Ollama
 from langchain.retrievers.contextual_compression import ContextualCompressionRetriever
 from sentence_transformers import CrossEncoder
 from langchain.retrievers.document_compressors import LLMChainExtractor
+from langchain_community.document_transformers import DoctranPropertyExtractor
 import os
 import pathlib
 import subprocess
@@ -35,6 +36,10 @@ loaders = {
     '.asm': UnstructuredFileLoader,
     '.TXT': TextLoader
 }
+
+logging.basicConfig(level=logging.INFO, filename = 'vector_log.log', filemode = 'w', format='%(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 
 def setup_ollama():
         """
@@ -235,26 +240,24 @@ def load_reranker():
         Returns:
             MixedBread: reranker
         """
-        # os.system("export MXBAI_API_KEY=input()")
-        # reranker = MixedbreadAIReranker()
-        # return reranker
         reranker = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1")
         return reranker    
 
 def format_docs(docs):
         """
-        Joins documents retrieved from vector store in one line format to make it easier for LLM to parse
+        Logs and joins documents retrieved from vector store in one line format to make it easier for LLM to parse
         
         Args:
             docs (Document): Documents from vector stores
 
         Returns:
             String: documents in one line
-        """
+        """        
         reranker = load_reranker()
         
         docs_content = []
         for doc in docs:
+                logger.info(doc)
                 docs_content.append(str(doc.page_content))
                 
         ranked_docs = reranker.rank(query, docs_content, return_documents=True)
@@ -290,15 +293,20 @@ if __name__=='__main__':
         sl.header("Welcome to the 📝 Computer Virus assistant")
         sl.write("🤖 You can chat by entering your queries")
         
-        # Creates vector store using any unprocessed files
-        # txt_file_rename(DATA_PATH)
-        # create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
-        # move_files(DATA_PATH)
-        
-        # Loads vector store, LLM, and prompt
-        knowledgeBase=load_knowledgeBase()
-        llm=load_llm()
-        prompt=load_prompt()
+        try:
+            # Creates vector store using any unprocessed files
+            txt_file_rename(DATA_PATH)
+            create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+            move_files(DATA_PATH)
+            
+            # Loads in vector store, LLM, and prompt
+            knowledge_base = load_knowledgeBase()
+            llm = load_llm()
+            prompt = load_prompt()
+            logger.info("Components loaded successfully.")
+        except Exception as e:
+            logger.error(f"Error loading components: {e}")
+            sl.write("An error occurred while loading the components. Please check the logs.")
         
         # Creates text box for user to query data
         query=sl.text_input('Enter some text')
@@ -313,7 +321,7 @@ if __name__=='__main__':
                 compressor = load_compressor()
                 compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
                 
-                # Chain that combines query, documents, prompt, and LLM to form process for generating response
+                # Chain that combines query, vectors, prompt, and LLM to generate response
                 rag_chain = (
                         {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
                         | prompt
