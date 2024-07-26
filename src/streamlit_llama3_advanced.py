@@ -147,7 +147,7 @@ def split_text(docs, max_length=512, chunk_overlap=50):
     chunks = splitter.split_documents(docs)
     return chunks
 
-def create_knowledgeBase(directory):
+def create_knowledgeBase(directory, vectorstore):
     """
     Loads in documents, splits into chunks, and vectorizes chunks and stores vectors under FAISS vector store
     """
@@ -260,7 +260,7 @@ if __name__ == '__main__':
     try:
         # Creates vector store using any unprocessed files
         txt_file_rename(DATA_PATH)
-        create_knowledgeBase(DATA_PATH)
+        create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
         move_files(DATA_PATH)
         
         knowledge_base = load_knowledgeBase()
