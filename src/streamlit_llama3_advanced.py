@@ -114,26 +114,33 @@ def create_directory_loader(file_type, directory_path):
             glob=f"**/*{file_type}",
             loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
-def load_documents():
-    file_types = get_file_types(DATA_PATH)
-    documents = []
-    
-    for file_type in file_types:
-        if file_type.strip() != "":
-            if file_type == '.json':
-                loader_list = create_directory_loader(file_type, DATA_PATH)
-                for loader in loader_list:
-                    docs = loader.load()
-                    chunks = split_text(docs)
-                    if chunks:
-                        documents.extend(chunks)
-            else:
-                loader = create_directory_loader(file_type, DATA_PATH)
-                docs = loader.load()
-                chunks = split_text(docs)
-                if chunks:
-                    documents.extend(chunks)
-    return documents
+def load_documents(directory):
+        """
+        Loads in files from ../data directory and returns them
+
+        Returns:
+                List[Document]: Array of documents
+        """
+        file_types = get_file_types(directory)
+        documents = []
+        
+        for file_type in file_types:
+                if file_type.strip() != "":
+                        if file_type == '.json':
+                                loader_list = create_directory_loader(file_type, directory)
+                                for loader in loader_list:
+                                        docs = loader.load()
+                                        chunks = split_text(docs)
+                                        if chunks != None and chunks != "" and len(chunks) > 0:
+                                                documents.extend(chunks)
+                        else:        
+                                loader = create_directory_loader(file_type, directory)
+                                docs = loader.load()
+                                chunks = split_text(docs)
+                                if chunks != None and chunks != "" and len(chunks) > 0:
+                                        documents.extend(chunks)
+        return documents
+
 
 def split_text(docs, max_length=512, chunk_overlap=50):
     splitter = RecursiveCharacterTextSplitter(
