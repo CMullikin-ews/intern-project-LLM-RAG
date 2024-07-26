@@ -54,16 +54,6 @@ def setup_ollama():
 logging.basicConfig(level=logging.INFO, filename = 'vector_log.log', filemode = 'w', format='%(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def pull_vectors_from_store(vectors):
-    # This is a placeholder function. Replace with actual code to pull vectors.
-    vectors = np.random.rand(10, 5)  # Example: 10 vectors of dimension 5
-    return vectors
-
-# Step 3: Log the vectors
-def log_vectors(vectors):
-    for i, vector in enumerate(vectors):
-        logger.info(f"Vector {i}: {vector}")
-
 def txt_file_rename(directory):
     """
     Takes .txt files and renames them if they have a line containing title in them
@@ -206,8 +196,44 @@ def load_prompt():
     """
     return ChatPromptTemplate.from_template(prompt)
 
+def load_reranker():
+        """
+        Creates and returns MixedBread reranker algorithm
+
+        Returns:
+            MixedBread: reranker
+        """
+        os.system("export MXBAI_API_KEY=input()")
+        reranker = MixedbreadAIReranker()
+        return reranker
+
+
 def format_docs(docs):
-    return "\n\n".join(doc.page_content for doc in docs)
+        reranker = load_reranker()
+        
+        docs_content = []
+        for doc in docs:
+            logger.info(doc)
+            docs_content.append(str(doc.page_content))
+                
+        ranked_docs = reranker.rank(query, docs_content, return_documents=True)
+        ranked_docs_content = []
+        for ranked_doc in ranked_docs:
+            ranked_docs_content.append(str(ranked_doc.get('text')))
+
+        return "\n\n".join(doc.page_content for doc in docs)
+
+def load_compressor():
+        """
+        Creates and returns contextual compressor using LLM which reduces size of documents from vector store
+
+        Returns:
+            LLMChainExtractor: contextual compressor
+        """
+        llm = load_llm()
+        compressor = LLMChainExtractor.from_llm(llm)
+        return compressor
+
 
 def generate_response(query: str) -> str:
     responses = [
@@ -235,12 +261,6 @@ def respond_with_sources(query, retriever) -> str:
     citation_text = "Documents used: " + ", ".join(sources)
     return f"\n\n{citation_text}"
 
-# def extract_metadata_with_mixedbreadai(text: str) -> dict:
-#     """Extract metadata using MixedBreadAI."""
-#     mixedbread_ai = MixedBreadAI()
-#     metadata = mixedbread_ai.extract_metadata(text)
-#     return metadata
-
 if __name__ == '__main__':
     setup_ollama()
     st.header("Welcome to the 📝Computer Virus Copilot")
@@ -250,6 +270,12 @@ if __name__ == '__main__':
         create_knowledgeBase()
 
     try:
+        # Creates vector store using any unprocessed files
+        txt_file_rename(DATA_PATH)
+        create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+        move_files(DATA_PATH)
+            
+
         knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
@@ -266,8 +292,10 @@ if __name__ == '__main__':
             documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
             similar_embeddings = FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
             retriever = similar_embeddings.as_retriever()
+            compressor = load_compressor()
+            compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
             rag_chain = (
-                {"context": retriever | format_docs, "question": RunnablePassthrough()}
+                {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
                 | prompt
                 | llm
                 | StrOutputParser()
