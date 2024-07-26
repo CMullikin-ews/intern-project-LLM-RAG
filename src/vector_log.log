@@ -3,3 +3,5 @@ faiss.loader - INFO - Could not load library with AVX2 support due to:
 ModuleNotFoundError("No module named 'faiss.swigfaiss_avx2'")
 faiss.loader - INFO - Loading faiss.
 faiss.loader - INFO - Successfully loaded faiss.
+__main__ - INFO - Components loaded successfully.
+__main__ - INFO - Components loaded successfully.

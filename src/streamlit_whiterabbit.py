@@ -313,7 +313,7 @@ if __name__=='__main__':
         
         if(query):
                 # Gets most similar vectors from knowledge base to user query and turns into actual documents
-                similar_embeddings=knowledgeBase.similarity_search(query)
+                similar_embeddings=knowledge_base.similarity_search(query)
                 similar_embeddings=FAISS.from_documents(documents=similar_embeddings, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
                 
                 # Defines retriever for getting vectors from vector store
