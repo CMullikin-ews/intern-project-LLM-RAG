@@ -37,7 +37,6 @@ loaders = {
 logging.basicConfig(level=logging.INFO, filename = 'vector_log.log', filemode = 'w', format='%(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
 def setup_ollama():
         """
         Downloads (if necessary) and runs ollama locally
@@ -278,7 +277,16 @@ def load_compressor():
 
 
 def respond_with_sources(query, retriever) -> str:
-    # This function should be updated as per your logic to retrieve documents
+    """
+    Pulls and returns the sources of all the documents used in the query
+
+    Args:
+        query (str): query inputted by user
+        retriever (FAISS_retriver): gets most similar vectors from vector store
+
+    Returns:
+        str: each source used
+    """
     retrieved_docs = retriever.invoke(query)
     sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] for doc in retrieved_docs}
     citation_text = "Documents used: " + ", ".join(sources)
