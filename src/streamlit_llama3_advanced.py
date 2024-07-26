@@ -1,11 +1,7 @@
 import pathlib
 import subprocess
-import docx
 import streamlit as st
 import numpy as np
-import json
-from typing import List, Tuple
-from transformers import pipeline
 from mixedbread_ai_haystack.rerankers import MixedbreadAIReranker
 from langchain_community.document_loaders import DirectoryLoader, JSONLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -17,16 +13,9 @@ from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.llms import Ollama
 from langchain.schema import Document
 import os
-import PyPDF2
 import docx
 import logging
 import random
-import re
-import nltk
-from collections import Counter
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from mixedbread_ai import MixedBreadAI
 
 # Download NLTK stopwords
 # nltk.download('stopwords')
