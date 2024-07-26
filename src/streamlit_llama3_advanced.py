@@ -44,6 +44,8 @@ logger = logging.getLogger(__name__)
 
 def setup_ollama():
     """Downloads (if necessary) and runs ollama locally."""
+    # os.system("curl -fsSL https://ollama.com/install.sh | sh")
+    # os.system("export OLLAMA_HOST=localhost:8501")
     os.system("sudo service ollama stop")
     cmd = "ollama serve"
     with open(os.devnull, 'wb') as devnull:
@@ -256,29 +258,26 @@ if __name__ == '__main__':
         knowledge_base = load_knowledgeBase()
         llm = load_llm()
         prompt = load_prompt()
-        logging.info("Components loaded successfully.")
-    except Exception as e:
-        logging.error(f"Error loading components: {e}")
-        st.write("An error occurred while loading the components. Please check the logs.")
-
-    query = st.text_input('Enter some text')
+        logger.info("Components loaded successfully.")
+        
+        query = st.text_input('Enter some text')
     
-    if query:
-        try:
-            similar_embeddings = knowledge_base.similarity_search(query)
-            documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
-            similar_embeddings = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
-            retriever = similar_embeddings.as_retriever()
-            compressor = load_compressor()
-            compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
-            rag_chain = (
-                {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
-                | prompt
-                | llm
-                | StrOutputParser()
-            )
-            response = rag_chain.invoke(query) + respond_with_sources(query, retriever)
-            st.write(response)
-        except Exception as e:
-            logging.error(f"Error processing query: {e}")
-            st.write("An error occurred while processing your query. Please check the logs.")
+        if query:
+                similar_embeddings = knowledge_base.similarity_search(query)
+                documents = [Document(page_content=doc.page_content) for doc in similar_embeddings]
+                similar_embeddings = FAISS.from_documents(documents=documents, embedding=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True))
+                retriever = similar_embeddings.as_retriever()
+                compressor = load_compressor()
+                compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
+                rag_chain = (
+                    {"context": compression_retriever | format_docs, "question": RunnablePassthrough()}
+                    | prompt
+                    | llm
+                    | StrOutputParser()
+                )
+                response = rag_chain.invoke(query) + respond_with_sources(query, retriever)
+                st.write(response)
+
+    except Exception as e:
+        logging.error(f"Error processing query: {e}")
+        st.write("An error occurred while processing your query. Please check the logs.")
