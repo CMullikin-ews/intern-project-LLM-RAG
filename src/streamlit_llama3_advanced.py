@@ -194,15 +194,19 @@ def load_prompt():
 
 def format_docs(docs):
     reranker = load_reranker()
+        
     docs_content = []
     for doc in docs:
-        logger.info(doc)
+        logger.info(f"\nDocument used in query for {query}: {doc}")
         docs_content.append(str(doc.page_content))
+                
     ranked_docs = reranker.rank(query, docs_content, return_documents=True)
     ranked_docs_content = []
     for ranked_doc in ranked_docs:
         ranked_docs_content.append(str(ranked_doc.get('text')))
-    return "\n\n".join(doc.page_content for doc in docs)
+        
+    return "\n\n".join(ranked_docs_content)
+
 
 def load_compressor():
     """
@@ -243,6 +247,10 @@ def respond_with_sources(query, retriever) -> str:
 
 if __name__ == '__main__':
     setup_ollama()
+
+    DATA_PATH = '../../processed_cyber_data'
+    DB_FAISS_PATH = '../vectorstore'
+
     st.header("Welcome to the 📝Computer Virus Copilot")
     st.write("🤖 You can chat by entering your queries")
 
