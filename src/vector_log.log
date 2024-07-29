@@ -1,3 +1,9 @@
+__main__ - ERROR - 
+Error loading components: DoctranPropertyExtractor.__init__() missing 1 required positional argument: 'properties'
+__main__ - ERROR - 
+Error loading components: DoctranPropertyExtractor.__init__() missing 1 required positional argument: 'properties'
+__main__ - ERROR - 
+Error loading components: Did not find openai_api_key, please add an environment variable `OPENAI_API_KEY` which contains it, or pass `openai_api_key` as a named parameter.
 faiss.loader - INFO - Loading faiss with AVX2 support.
 faiss.loader - INFO - Could not load library with AVX2 support due to:
 ModuleNotFoundError("No module named 'faiss.swigfaiss_avx2'")
