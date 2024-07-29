@@ -135,7 +135,7 @@ def load_documents(directory):
                                 chunks = split_text(docs)
                                 if chunks != None and chunks != "" and len(chunks) > 0:
                                         documents.extend(chunks)
-        return documents
+        return metadata_extractor(documents)
 
 def split_text(docs, chunk_size=512, chunk_overlap=50):
         """
@@ -156,18 +156,38 @@ def split_text(docs, chunk_size=512, chunk_overlap=50):
         chunks = splitter.split_documents(docs)
         return chunks
     
-def extract_metadata(documents):
-    """
-    Extracts metadata from documents using DoctranPropertyExtractor
-        
-    Args:
-        documents (List[Document]): List of documents to extract metadata from
-        
-    Returns:
-        List[Document]: List of documents with extracted metadata
-    """
-    extractor = DoctranPropertyExtractor()
-    return extractor.transform_documents(documents)
+def metadata_extractor(documents):
+    properties = [
+    {
+        "name": "category",
+        "description": "What type of document this is.",
+        "type": "string",
+        "enum": ["code_block", "instructions", "explanation"],
+        "required": True,
+    },
+    {
+        "name": "malware",
+        "description": "A list of all malware mentioned in this document.",
+        "type": "array",
+        "items": {
+            "name": "computer_malware",
+            "description": "The full name of the malware used",
+            "type": "string",
+        },
+        "required": True,
+    },
+    {
+        "name": "eli5",
+        "description": "Explain this email to me like I'm 5 years old.",
+        "type": "string",
+        "required": True,
+    },
+]
+    
+    property_extractor = DoctranPropertyExtractor(properties=properties)
+    extracted_document = property_extractor.transform_documents(documents, properties=properties)
+    return extracted_document
+
 
 
 def create_knowledgeBase(directory, vectorstore):
@@ -179,7 +199,6 @@ def create_knowledgeBase(directory, vectorstore):
         vectorstore (FAISS):
     """
     documents = load_documents(directory)
-    documents = extract_metadata(documents)
     os.system("ollama pull mxbai-embed-large")
     embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     if len(documents) > 0:
@@ -234,14 +253,31 @@ def load_prompt():
 
         Returns:
             ChatPromptTemplate: Prompt for LLM
-        """
-        prompt = """You need to answer the question in the sentence as same as in the content.
+        # """
+        # prompt = """You need to answer the question in the sentence as same as in the content.
+        # Cite the sources of any data provided.
+        # Given below is the context and question of the user.
+        # context = {context}
+        # question = {question}
+        # if the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this."
+        # """
+        
+        prompt = """Provide detailed steps to address the question about offensive cyber operations.
         Cite the sources of any data provided.
         Given below is the context and question of the user.
         context = {context}
         question = {question}
         if the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this."
         """
+    
+        # prompt = """Given the following question and context, extract any part of the 
+        # context that is relevant to answer the question. 
+        # Cite the sources of any data provided.
+        # Given below is the context and question of the user.
+        # context = {context}
+        # question = {question}
+        # if the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this."
+        # """
         prompt = ChatPromptTemplate.from_template(prompt)
         return prompt
 
@@ -317,7 +353,7 @@ if __name__=='__main__':
 
         
         # Creates header for streamlit app and writes to it
-        sl.header("Welcome to the 📝 Computer Virus assistant")
+        sl.header("Welcome to the 📝 Offensive Cyber Assistant")
         sl.write("🤖 You can chat by entering your queries")
         
         try:
