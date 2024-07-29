@@ -110,7 +110,7 @@ def create_directory_loader(file_type, directory_path):
         loader_cls=loaders.get(file_type, UnstructuredFileLoader)
 )
 
-def split_text(docs, chunk_size=512, chunk_overlap=50):
+def split_text(docs, chunk_size=512, chunk_overlap=64):
         """
         Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
         
@@ -356,9 +356,9 @@ if __name__=='__main__':
         
         try:
                 #Creates vector store using any unprocessed files
-                txt_file_rename(DATA_PATH)
-                create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
-                move_files(DATA_PATH)
+                # txt_file_rename(DATA_PATH)
+                # create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+                # move_files(DATA_PATH)
                 
                 # Loads in vector store, LLM, and prompt
                 knowledge_base = load_knowledgeBase()
