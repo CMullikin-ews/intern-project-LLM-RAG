@@ -110,6 +110,57 @@ def create_directory_loader(file_type, directory_path):
         loader_cls=loaders.get(file_type, UnstructuredFileLoader)
 )
 
+def split_text(docs, chunk_size=512, chunk_overlap=50):
+        """
+        Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
+        
+        Parameters:
+                text (str): The input text to be split.
+                max_length (int): The maximum length of each chunk.
+                chunk_overlap (int): The number of characters to overlap between chunks.
+                
+        Returns:
+                List[str]: A list of text chunks.
+        """
+        splitter = RecursiveCharacterTextSplitter(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap
+        )
+        chunks = splitter.split_documents(docs)
+        return chunks
+    
+# def metadata_extractor(documents):
+#     properties = [
+#     {
+#         "name": "category",
+#         "description": "What type of document this is.",
+#         "type": "string",
+#         "enum": ["code_block", "instructions", "explanation"],
+#         "required": True,
+#     },
+#     {
+#         "name": "malware",
+#         "description": "A list of all malware mentioned in this document.",
+#         "type": "array",
+#         "items": {
+#             "name": "computer_malware",
+#             "description": "The full name of the malware used",
+#             "type": "string",
+#         },
+#         "required": True,
+#     },
+#     {
+#         "name": "eli5",
+#         "description": "Explain this email to me like I'm 5 years old.",
+#         "type": "string",
+#         "required": True,
+#     },
+# ]
+    
+#     property_extractor = DoctranPropertyExtractor(properties=properties)
+#     extracted_document = property_extractor.transform_documents(documents, properties=properties)
+#     return extracted_document
+
 def load_documents(directory):
         """
         Loads in files from ../data directory and returns them
@@ -135,60 +186,7 @@ def load_documents(directory):
                                 chunks = split_text(docs)
                                 if chunks != None and chunks != "" and len(chunks) > 0:
                                         documents.extend(chunks)
-        return metadata_extractor(documents)
-
-def split_text(docs, chunk_size=512, chunk_overlap=50):
-        """
-        Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
-        
-        Parameters:
-                text (str): The input text to be split.
-                max_length (int): The maximum length of each chunk.
-                chunk_overlap (int): The number of characters to overlap between chunks.
-                
-        Returns:
-                List[str]: A list of text chunks.
-        """
-        splitter = RecursiveCharacterTextSplitter(
-                chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap
-        )
-        chunks = splitter.split_documents(docs)
-        return chunks
-    
-def metadata_extractor(documents):
-    properties = [
-    {
-        "name": "category",
-        "description": "What type of document this is.",
-        "type": "string",
-        "enum": ["code_block", "instructions", "explanation"],
-        "required": True,
-    },
-    {
-        "name": "malware",
-        "description": "A list of all malware mentioned in this document.",
-        "type": "array",
-        "items": {
-            "name": "computer_malware",
-            "description": "The full name of the malware used",
-            "type": "string",
-        },
-        "required": True,
-    },
-    {
-        "name": "eli5",
-        "description": "Explain this email to me like I'm 5 years old.",
-        "type": "string",
-        "required": True,
-    },
-]
-    
-    property_extractor = DoctranPropertyExtractor(properties=properties)
-    extracted_document = property_extractor.transform_documents(documents, properties=properties)
-    return extracted_document
-
-
+        return documents
 
 def create_knowledgeBase(directory, vectorstore):
     """
