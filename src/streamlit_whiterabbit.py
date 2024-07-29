@@ -155,6 +155,20 @@ def split_text(docs, chunk_size=512, chunk_overlap=50):
         )
         chunks = splitter.split_documents(docs)
         return chunks
+    
+def extract_metadata(documents):
+    """
+    Extracts metadata from documents using DoctranPropertyExtractor
+        
+    Args:
+        documents (List[Document]): List of documents to extract metadata from
+        
+    Returns:
+        List[Document]: List of documents with extracted metadata
+    """
+    extractor = DoctranPropertyExtractor()
+    return extractor.transform_documents(documents)
+
 
 def create_knowledgeBase(directory, vectorstore):
     """
@@ -165,6 +179,7 @@ def create_knowledgeBase(directory, vectorstore):
         vectorstore (FAISS):
     """
     documents = load_documents(directory)
+    documents = extract_metadata(documents)
     os.system("ollama pull mxbai-embed-large")
     embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     if len(documents) > 0:
