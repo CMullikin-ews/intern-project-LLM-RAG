@@ -216,7 +216,7 @@ def create_knowledgeBase(directory, vectorstore):
         vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
         if os.path.exists(DB_FAISS_PATH + '/index.faiss'):
             old_vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
-            old_vectorstore.merge_from(DB_FAISS_PATH)
+            old_vectorstore.merge_from(vectorstore)
             old_vectorstore.save_local(DB_FAISS_PATH)
         else:
             vectorstore.save_local(DB_FAISS_PATH)
