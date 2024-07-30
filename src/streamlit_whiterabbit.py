@@ -1,6 +1,6 @@
 # Packages used in RAG system
 import streamlit as sl
-from langchain_community.document_loaders import DirectoryLoader, TextLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
+from langchain_community.document_loaders import DirectoryLoader, TextLoader, JSONLoader, UnstructuredFileLoader, UnstructuredHTMLLoader, UnstructuredMarkdownLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
@@ -46,7 +46,7 @@ def setup_ollama():
         os.system("sudo service ollama stop")
         cmd = "ollama serve"
         with open(os.devnull, 'wb') as devnull:
-                process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
+            process = subprocess.Popen(cmd, shell=True, stdout=devnull, stderr=devnull)
 
 def txt_file_rename(directory):
     """
@@ -104,19 +104,16 @@ def create_directory_loader(file_type, directory_path):
         Returns:
             DirectoryLoader: loader for the files in the directory provided
         """
-        return DirectoryLoader(
-        path=directory_path,
-        glob=f"**/*{file_type}",
-        loader_cls=loaders.get(file_type, UnstructuredFileLoader)
-)
-directory_loader = create_directory_loader(file_type, directory_path)
-
-# Load documents using the DirectoryLoader instance
-documents = directory_loader.load()
-
-# Iterate over the loaded documents
-for doc in documents:
-    print(doc)
+        if file_type == '.json':
+            loader_list = []
+            for file_name in [file for file in os.listdir(directory_path) if file.endswith('.json')]:
+                loader_list.append(JSONLoader(file_path=directory_path+'/'+file_name,jq_schema='.', text_content=False))
+            return loader_list
+        else:
+            return DirectoryLoader(
+            path=directory_path,
+            glob=f"**/*{file_type}",
+            loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
 def split_text(docs, chunk_size=512, chunk_overlap=64):
         """
@@ -135,6 +132,7 @@ def split_text(docs, chunk_size=512, chunk_overlap=64):
                 chunk_overlap=chunk_overlap
         )
         chunks = splitter.split_documents(docs)
+        logger.info(f"Chunks created: {len(chunks)}")
         return chunks
     
 # def metadata_extractor(documents):
@@ -171,13 +169,17 @@ def split_text(docs, chunk_size=512, chunk_overlap=64):
 
 def chunk_numberer(docs):
     num = 1
-    source = docs[0].metadata['source']
-    for doc in docs:
-        if source != doc.metadata['source']:
-            num = 1
-            source = doc.metadata['source']
-        doc.metadata['chunk_no'] = num
-        num += 1
+    if docs:
+        source = docs[0].metadata.get('source', 'unknown')
+        for doc in docs:
+            if 'source' not in doc.metadata:
+                logger.error(f"Missing 'source' in document metadata: {doc.metadata}")
+                continue
+            if source != doc.metadata['source']:
+                num = 1
+                source = doc.metadata['source']
+            doc.metadata['chunk_no'] = num
+            num += 1
     return docs
 
 def load_documents(directory):
@@ -358,6 +360,9 @@ def respond_with_sources(query, retriever) -> str:
         str: each source used
     """
     retrieved_docs = retriever.invoke(query)
+    if not retrieved_docs:
+        logger.info("No documents retrieved for query.")
+        return "No documents retrieved."
     sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] + f" (chunk {doc.metadata['chunk_no']})" for doc in retrieved_docs}
     citation_text = "Documents used: " + ", ".join(sources)
     return f"\n\n{citation_text}"
