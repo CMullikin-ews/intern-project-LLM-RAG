@@ -260,7 +260,7 @@ def load_llm():
 
 def load_prompt():
         """
-        Creates and returns prompt for LLM query that specifies how response sounds and structure of response
+        Creates and returns conda install -c pytorch faiss-gprompt for LLM query that specifies how response sounds and structure of response
 
         Returns:
             ChatPromptTemplate: Prompt for LLM
