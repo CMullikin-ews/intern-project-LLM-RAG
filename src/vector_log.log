@@ -5,3 +5,5 @@ faiss.loader - INFO - Loading faiss.
 faiss.loader - INFO - Successfully loaded faiss.
 __main__ - ERROR - 
 Error loading components: 'IndexFlat' object has no attribute 'merge_from'
+__main__ - ERROR - 
+Error loading components: 'IndexFlat' object has no attribute 'merge_from'

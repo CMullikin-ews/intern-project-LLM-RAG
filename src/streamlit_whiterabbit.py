@@ -207,18 +207,18 @@ def create_knowledgeBase(directory, vectorstore):
     
     Parameters:
         directory (str): The input text to be split.
-        vectorstore (FAISS):
+        vectorstore (FAISS): vector store containing vectors of documents
     """
     documents = load_documents(directory)
     os.system("ollama pull mxbai-embed-large")
     embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     if len(documents) > 0:
-        vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
         if os.path.exists(DB_FAISS_PATH + '/index.faiss'):
             old_vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
-            old_vectorstore.merge_from(vectorstore)
+            old_vectorstore.add_documents(documents)
             old_vectorstore.save_local(DB_FAISS_PATH)
         else:
+            vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
             vectorstore.save_local(DB_FAISS_PATH)
 
 def move_files(directory):
@@ -360,7 +360,7 @@ if __name__=='__main__':
         
         # Location of the documents for the vector store and location of the vector store
         DATA_PATH = '../../unprocessed_cyber_data'
-        DB_FAISS_PATH = '../vectorstore'
+        DB_FAISS_PATH = '../test'
 
         
         # Creates header for streamlit app and writes to it
