@@ -161,6 +161,17 @@ def split_text(docs, chunk_size=512, chunk_overlap=64):
 #     extracted_document = property_extractor.transform_documents(documents, properties=properties)
 #     return extracted_document
 
+def chunk_numberer(docs):
+    num = 1
+    source = docs[0].metadata['source']
+    for doc in docs:
+        if source != doc.metadata['source']:
+            num = 1
+            source = doc.metadata['source']
+        doc.metadata['chunk_no'] = num
+        num += 1
+    return docs
+
 def load_documents(directory):
         """
         Loads in files from ../data directory and returns them
@@ -186,7 +197,9 @@ def load_documents(directory):
                                 chunks = split_text(docs)
                                 if chunks != None and chunks != "" and len(chunks) > 0:
                                         documents.extend(chunks)
+        documents = chunk_numberer(documents)
         return documents
+        # return metadata_extractor(documents)
 
 def create_knowledgeBase(directory, vectorstore):
     """
