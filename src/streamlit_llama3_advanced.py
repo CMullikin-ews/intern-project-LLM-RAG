@@ -131,40 +131,40 @@ def split_text(docs, chunk_size=512, chunk_overlap=64):
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap
         )
-        chunks = splitter.split_documents(docs)
+        chunks = splitter.split_text(docs)
         return chunks
     
-def metadata_extractor(documents):
-    properties = [
-    {
-        "name": "category",
-        "description": "What type of document this is.",
-        "type": "string",
-        "enum": ["code_block", "instructions", "explanation"],
-        "required": True,
-    },
-    {
-        "name": "malware",
-        "description": "A list of all malware mentioned in this document.",
-        "type": "array",
-        "items": {
-            "name": "computer_malware",
-            "description": "The full name of the malware used",
-            "type": "string",
-        },
-        "required": True,
-    },
-    {
-        "name": "eli5",
-        "description": "Explain this email to me like I'm 5 years old.",
-        "type": "string",
-        "required": True,
-    },
-]
+# def metadata_extractor(documents):
+#     properties = [
+#     {
+#         "name": "category",
+#         "description": "What type of document this is.",
+#         "type": "string",
+#         "enum": ["code_block", "instructions", "explanation"],
+#         "required": True,
+#     },
+#     {
+#         "name": "malware",
+#         "description": "A list of all malware mentioned in this document.",
+#         "type": "array",
+#         "items": {
+#             "name": "computer_malware",
+#             "description": "The full name of the malware used",
+#             "type": "string",
+#         },
+#         "required": True,
+#     },
+#     {
+#         "name": "eli5",
+#         "description": "Explain this email to me like I'm 5 years old.",
+#         "type": "string",
+#         "required": True,
+#     },
+# ]
     
-    property_extractor = DoctranPropertyExtractor(properties=properties)
-    extracted_document = property_extractor.transform_documents(documents, properties=properties)
-    return extracted_document
+#     property_extractor = DoctranPropertyExtractor(properties=properties)
+#     extracted_document = property_extractor.transform_documents(documents, properties=properties)
+#     return extracted_document
 
 def load_documents(directory):
         """
