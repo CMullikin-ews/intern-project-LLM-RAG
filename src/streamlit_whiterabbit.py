@@ -213,12 +213,12 @@ def create_knowledgeBase(directory, vectorstore):
     os.system("ollama pull mxbai-embed-large")
     embeddings=OllamaEmbeddings(model="mxbai-embed-large", show_progress=True)
     if len(documents) > 0:
+        vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
         if os.path.exists(DB_FAISS_PATH + '/index.faiss'):
             old_vectorstore = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
-            old_vectorstore.add_documents(documents)
+            old_vectorstore.merge_from(vectorstore)
             old_vectorstore.save_local(DB_FAISS_PATH)
         else:
-            vectorstore = FAISS.from_documents(documents=documents, embedding=embeddings)
             vectorstore.save_local(DB_FAISS_PATH)
 
 def move_files(directory):
