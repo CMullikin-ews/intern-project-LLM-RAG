@@ -1,7 +1,2 @@
-faiss.loader - INFO - Loading faiss with AVX2 support.
-faiss.loader - INFO - Could not load library with AVX2 support due to:
-ModuleNotFoundError("No module named 'faiss.swigfaiss_avx2'")
-faiss.loader - INFO - Loading faiss.
-faiss.loader - INFO - Successfully loaded faiss.
 __main__ - ERROR - 
-Error loading components: 'IndexFlat' object has no attribute 'merge_from'
+Error loading components: 'DirectoryLoader' object is not iterable

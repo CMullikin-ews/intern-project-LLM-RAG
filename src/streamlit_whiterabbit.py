@@ -109,6 +109,14 @@ def create_directory_loader(file_type, directory_path):
         glob=f"**/*{file_type}",
         loader_cls=loaders.get(file_type, UnstructuredFileLoader)
 )
+directory_loader = create_directory_loader(file_type, directory_path)
+
+# Load documents using the DirectoryLoader instance
+documents = directory_loader.load()
+
+# Iterate over the loaded documents
+for doc in documents:
+    print(doc)
 
 def split_text(docs, chunk_size=512, chunk_overlap=64):
         """
