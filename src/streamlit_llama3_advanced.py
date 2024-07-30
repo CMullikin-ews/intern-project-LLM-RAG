@@ -191,7 +191,7 @@ def load_documents(directory):
                                 chunks = split_text(docs)
                                 if chunks != None and chunks != "" and len(chunks) > 0:
                                         documents.extend(chunks)
-        return metadata_extractor(documents)
+        return documents
 
 
 def create_knowledgeBase(directory, vectorstore):
@@ -298,7 +298,7 @@ if __name__ == '__main__':
     DATA_PATH = '../../processed_cyber_data'
     DB_FAISS_PATH = '../vectorstore'
 
-    st.header("Welcome to the 📝Computer Virus Copilot")
+    st.header("Welcome to the 📝 Offensive Cyber Assistant")
     st.write("🤖 You can chat by entering your queries")
 
     try:
