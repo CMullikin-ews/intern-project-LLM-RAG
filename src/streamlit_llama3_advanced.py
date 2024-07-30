@@ -115,15 +115,6 @@ def create_directory_loader(file_type, directory_path):
             glob=f"**/*{file_type}",
             loader_cls=loaders.get(file_type, UnstructuredFileLoader))
 
-
-def split_text(docs, max_length=512, chunk_overlap=50):
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=max_length,
-        chunk_overlap=chunk_overlap
-    )
-    chunks = splitter.split_documents(docs)
-    return chunks
-
 def split_text(docs, chunk_size=512, chunk_overlap=64):
         """
         Splits the given text into chunks of a specified maximum length using RecursiveCharacterTextSplitter.
