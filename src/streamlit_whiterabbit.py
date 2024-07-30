@@ -337,7 +337,7 @@ def respond_with_sources(query, retriever) -> str:
         str: each source used
     """
     retrieved_docs = retriever.invoke(query)
-    sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] for doc in retrieved_docs}
+    sources = {doc.metadata['source'].replace('/', '.').split('.')[-2] + f" (chunk {doc.metadata['chunk_no']})" for doc in retrieved_docs}
     citation_text = "Documents used: " + ", ".join(sources)
     return f"\n\n{citation_text}"
 
