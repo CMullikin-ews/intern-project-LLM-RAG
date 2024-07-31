@@ -1,4 +1,2 @@
-__main__ - INFO - Chunks created: 15789
-langchain_community.document_loaders.directory - ERROR - Error loading file ../../unprocessed_cyber_data/T1021.006.md
-__main__ - ERROR - 
-Error loading components: unstructured package not found, please install it with `pip install unstructured`
+faiss.loader - INFO - Loading faiss with AVX2 support.
+faiss.loader - INFO - Successfully loaded faiss with AVX2 support.

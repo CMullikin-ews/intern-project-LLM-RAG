@@ -407,7 +407,7 @@ if __name__=='__main__':
                 #Creates vector store using any unprocessed files
                 rename_files_in_directory(DATA_PATH)
                 txt_file_rename(DATA_PATH)
-                # create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+                create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
                 move_files(DATA_PATH, NEW_DATA_PATH)
                 
                 # Loads in vector store, LLM, and prompt
