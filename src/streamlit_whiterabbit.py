@@ -231,7 +231,7 @@ def create_knowledgeBase(directory, vectorstore):
         else:
             vectorstore.save_local(DB_FAISS_PATH)
 
-def move_files(directory):
+def move_files(directory, new_directory):
     """
     Moves files from unprocessed data directory to processed data directory
     
@@ -240,10 +240,9 @@ def move_files(directory):
     """
     file_paths = pathlib.Path(directory).iterdir()
     for file_path in file_paths:
-        new_path = '../../processed_cyber_data/'
         file_name = os.path.basename(file_path)
         new_path += file_name
-        os.replace(file_path, new_path)
+        os.replace(file_path, new_directory)
 
 def load_knowledgeBase():
         """
@@ -373,7 +372,8 @@ if __name__=='__main__':
         
         # Location of the documents for the vector store and location of the vector store
         DATA_PATH = '../../unprocessed_cyber_data'
-        DB_FAISS_PATH = '../test'
+        NEW_DATA_PATH = '../../processed_cyber_data/'
+        DB_FAISS_PATH = '../vectorstore'
 
         
         # Creates header for streamlit app and writes to it
@@ -384,7 +384,7 @@ if __name__=='__main__':
                 #Creates vector store using any unprocessed files
                 txt_file_rename(DATA_PATH)
                 create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
-                move_files(DATA_PATH)
+                move_files(DATA_PATH, NEW_DATA_PATH)
                 
                 # Loads in vector store, LLM, and prompt
                 knowledge_base = load_knowledgeBase()
