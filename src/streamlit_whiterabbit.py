@@ -75,6 +75,15 @@ def txt_file_rename(directory):
                     except NotADirectoryError:
                         print(f"Not a directory: {new_file_name}")
 
+def rename_files_in_directory(directory):
+    for filename in os.listdir(directory):
+        if filename.endswith('.md'):
+            parts = filename.rsplit('.', 2)
+            if len(parts) == 3 and parts[1].isdigit():
+                new_filename = f"{parts[0]}-{parts[1]}.md"
+                os.rename(os.path.join(directory, filename), os.path.join(directory, new_filename))
+                print(f"Renamed: {filename} -> {new_filename}")
+
 def get_file_types(directory):
         """
         Traverses all of the files in specified directory and returns types of files that it finds
@@ -86,7 +95,7 @@ def get_file_types(directory):
             Set[str]: All of the file types that can be found in the directory
         """
         file_types = set()
-
+        
         for filename in os.listdir(directory):
                 if os.path.isfile(os.path.join(directory, filename)):
                         _, ext = os.path.splitext(filename)
@@ -382,6 +391,7 @@ if __name__=='__main__':
         
         try:
                 #Creates vector store using any unprocessed files
+                rename_files_in_directory(DATA_PATH)
                 txt_file_rename(DATA_PATH)
                 create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
                 move_files(DATA_PATH, NEW_DATA_PATH)

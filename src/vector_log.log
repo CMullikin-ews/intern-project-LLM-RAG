@@ -1,2 +1,4 @@
+__main__ - INFO - Chunks created: 15789
+langchain_community.document_loaders.directory - ERROR - Error loading file ../../unprocessed_cyber_data/T1021.006.md
 __main__ - ERROR - 
-Error loading components: jq package not found, please install it with `pip install jq`
+Error loading components: unstructured package not found, please install it with `pip install unstructured`
