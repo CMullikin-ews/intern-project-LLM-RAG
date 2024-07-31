@@ -76,6 +76,12 @@ def txt_file_rename(directory):
                         print(f"Not a directory: {new_file_name}")
 
 def rename_files_in_directory(directory):
+    """
+    Renames all the .md files in the directory with several periods in them to dashes
+
+    Args:
+        directory (str): path to directory
+    """
     for filename in os.listdir(directory):
         if filename.endswith('.md'):
             parts = filename.rsplit('.', 2)
@@ -177,6 +183,15 @@ def split_text(docs, chunk_size=512, chunk_overlap=64):
 #     return extracted_document
 
 def chunk_numberer(docs):
+    """
+    Numbers each chunk in each document to make it easier to find where chunks are located in documents
+
+    Args:
+        docs (List[Document]): list of documents 
+
+    Returns:
+        List[Document]: list of documents 
+    """
     num = 1
     if docs:
         source = docs[0].metadata.get('source', 'unknown')
@@ -250,8 +265,7 @@ def move_files(directory, new_directory):
     file_paths = pathlib.Path(directory).iterdir()
     for file_path in file_paths:
         file_name = os.path.basename(file_path)
-        new_path += file_name
-        os.replace(file_path, new_directory)
+        os.replace(file_path, new_directory+file_name)
 
 def load_knowledgeBase():
         """
@@ -393,7 +407,7 @@ if __name__=='__main__':
                 #Creates vector store using any unprocessed files
                 rename_files_in_directory(DATA_PATH)
                 txt_file_rename(DATA_PATH)
-                create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
+                # create_knowledgeBase(DATA_PATH, DB_FAISS_PATH)
                 move_files(DATA_PATH, NEW_DATA_PATH)
                 
                 # Loads in vector store, LLM, and prompt
