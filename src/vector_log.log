@@ -1,2 +1,3 @@
 faiss.loader - INFO - Loading faiss with AVX2 support.
 faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+__main__ - INFO - Components loaded successfully.
