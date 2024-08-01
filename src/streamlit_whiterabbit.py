@@ -303,9 +303,7 @@ def load_prompt():
         context = {context}
         question = {question}
         if the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this."
-        """
-        
-        #test
+        """        
         
         # prompt = """Provide detailed steps to address the question about offensive cyber operations.
         # Cite the sources of any data provided.
@@ -314,7 +312,7 @@ def load_prompt():
         # question = {question}
         # if the answer is not in the data provided answer "Sorry, I'm not sure how to respond to this."
         # """
-    
+        
         # prompt = """Given the following question and context, extract any part of the 
         # context that is relevant to answer the question. 
         # Cite the sources of any data provided.
